@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<block>
+  <name>uhd_tags</name>
+  <key>scapy_radio_uhd_tags</key>
+  <category>scapy_radio</category>
+  <import>import scapy_radio</import>
+  <make>scapy_radio.uhd_tags($len_tag, $start_tag, $end_tag)</make>
+
+  <param>
+    <name>Len tag name</name>
+    <key>len_tag</key>
+    <value>pdu_length</value>
+    <type>string</type>
+  </param>
+  <param>
+    <name>First tag name</name>
+    <key>start_tag</key>
+    <value>tx_sob</value>
+    <type>string</type>
+  </param>
+  <param>
+    <name>Last tag name</name>
+    <key>end_tag</key>
+    <value>tx_eob</value>
+    <type>string</type>
+  </param>
+
+  <sink>
+      <name>in</name>
+      <type>byte</type>
+  </sink>
+  <source>
+      <name>out</name>
+      <type>byte</type>
+  </source>
+
+</block>

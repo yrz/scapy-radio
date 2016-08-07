@@ -1,0 +1,1 @@
+/usr/bin/c++   -O3 -DNDEBUG    CMakeFiles/_scapy_radio_swig_doc_tag.dir/_scapy_radio_swig_doc_tag.cpp.o  -o _scapy_radio_swig_doc_tag -rdynamic 

@@ -1,0 +1,1 @@
+/usr/bin/c++  -fPIC -O3 -DNDEBUG   -shared -Wl,-soname,libgnuradio-scapy_radio.so -o libgnuradio-scapy_radio.so CMakeFiles/gnuradio-scapy_radio.dir/add_gr_header_impl.cc.o CMakeFiles/gnuradio-scapy_radio.dir/strip_gr_header_impl.cc.o CMakeFiles/gnuradio-scapy_radio.dir/Tagged_stream_2_PDU_2_impl.cc.o -lboost_filesystem -lboost_system -lgnuradio-runtime -lgnuradio-pmt 

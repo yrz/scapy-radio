@@ -1,0 +1,107 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.8">
+  <compounddef id="classgr_1_1scapy__radio_1_1add__gr__header" kind="class" prot="public" abstract="yes">
+    <compoundname>gr::scapy_radio::add_gr_header</compoundname>
+    <basecompoundref prot="public" virt="virtual">block</basecompoundref>
+    <includes refid="add__gr__header_8h" local="no">add_gr_header.h</includes>
+      <sectiondef kind="public-type">
+      <memberdef kind="typedef" id="classgr_1_1scapy__radio_1_1add__gr__header_1a79f93192437c91ee4aaa3ac311a27595" prot="public" static="no">
+        <type>boost::shared_ptr&lt; <ref refid="classgr_1_1scapy__radio_1_1add__gr__header" kindref="compound">add_gr_header</ref> &gt;</type>
+        <definition>typedef boost::shared_ptr&lt;add_gr_header&gt; gr::scapy_radio::add_gr_header::sptr</definition>
+        <argsstring></argsstring>
+        <name>sptr</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/pentest/Downloads/scapy-radio/gnuradio/gr-scapy_radio/include/scapy_radio/add_gr_header.h" line="40" column="1" bodyfile="/home/pentest/Downloads/scapy-radio/gnuradio/gr-scapy_radio/include/scapy_radio/add_gr_header.h" bodystart="40" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-static-func">
+      <memberdef kind="function" id="classgr_1_1scapy__radio_1_1add__gr__header_1a8eca1a6f02fcf436bffab7a7426817b2" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classgr_1_1scapy__radio_1_1add__gr__header_1a79f93192437c91ee4aaa3ac311a27595" kindref="member">sptr</ref></type>
+        <definition>static sptr gr::scapy_radio::add_gr_header::make</definition>
+        <argsstring>(int protocol_id)</argsstring>
+        <name>make</name>
+        <param>
+          <type>int</type>
+          <declname>protocol_id</declname>
+        </param>
+        <briefdescription>
+<para>Return a shared_ptr to a new instance of <ref refid="classgr_1_1scapy__radio_1_1add__gr__header" kindref="compound">scapy_radio::add_gr_header</ref>. </para>        </briefdescription>
+        <detaileddescription>
+<para>To avoid accidental use of raw pointers, <ref refid="classgr_1_1scapy__radio_1_1add__gr__header" kindref="compound">scapy_radio::add_gr_header</ref>&apos;s constructor is in a private implementation class. <ref refid="classgr_1_1scapy__radio_1_1add__gr__header_1a8eca1a6f02fcf436bffab7a7426817b2" kindref="member">scapy_radio::add_gr_header::make</ref> is the public interface for creating new instances. </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/pentest/Downloads/scapy-radio/gnuradio/gr-scapy_radio/include/scapy_radio/add_gr_header.h" line="50" column="1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classgr_1_1scapy__radio_1_1add__gr__header_1a44545767d6528f6413235b169592419c" prot="public" static="no" const="yes" explicit="no" inline="no" virt="pure-virtual">
+        <type>int</type>
+        <definition>virtual int gr::scapy_radio::add_gr_header::protocol_id</definition>
+        <argsstring>() const =0</argsstring>
+        <name>protocol_id</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/pentest/Downloads/scapy-radio/gnuradio/gr-scapy_radio/include/scapy_radio/add_gr_header.h" line="52" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classgr_1_1scapy__radio_1_1add__gr__header_1ae63a595347e9b298dfdbe27a1ed5a116" prot="public" static="no" const="no" explicit="no" inline="no" virt="pure-virtual">
+        <type>void</type>
+        <definition>virtual void gr::scapy_radio::add_gr_header::set_protocol_id</definition>
+        <argsstring>(int protocol_id)=0</argsstring>
+        <name>set_protocol_id</name>
+        <param>
+          <type>int</type>
+          <declname>protocol_id</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/pentest/Downloads/scapy-radio/gnuradio/gr-scapy_radio/include/scapy_radio/add_gr_header.h" line="53" column="1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+<para>&lt;+description of block+&gt; </para>    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="0">
+        <label>gr::scapy_radio::add_gr_header</label>
+        <link refid="classgr_1_1scapy__radio_1_1add__gr__header"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>gr::block</label>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="2">
+        <label>gr::scapy_radio::add_gr_header</label>
+        <link refid="classgr_1_1scapy__radio_1_1add__gr__header"/>
+        <childnode refid="3" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="3">
+        <label>gr::block</label>
+      </node>
+    </collaborationgraph>
+    <location file="/home/pentest/Downloads/scapy-radio/gnuradio/gr-scapy_radio/include/scapy_radio/add_gr_header.h" line="38" column="1" bodyfile="/home/pentest/Downloads/scapy-radio/gnuradio/gr-scapy_radio/include/scapy_radio/add_gr_header.h" bodystart="37" bodyend="54"/>
+    <listofallmembers>
+      <member refid="classgr_1_1scapy__radio_1_1add__gr__header_1a8eca1a6f02fcf436bffab7a7426817b2" prot="public" virt="non-virtual"><scope>gr::scapy_radio::add_gr_header</scope><name>make</name></member>
+      <member refid="classgr_1_1scapy__radio_1_1add__gr__header_1a44545767d6528f6413235b169592419c" prot="public" virt="pure-virtual"><scope>gr::scapy_radio::add_gr_header</scope><name>protocol_id</name></member>
+      <member refid="classgr_1_1scapy__radio_1_1add__gr__header_1ae63a595347e9b298dfdbe27a1ed5a116" prot="public" virt="pure-virtual"><scope>gr::scapy_radio::add_gr_header</scope><name>set_protocol_id</name></member>
+      <member refid="classgr_1_1scapy__radio_1_1add__gr__header_1a79f93192437c91ee4aaa3ac311a27595" prot="public" virt="non-virtual"><scope>gr::scapy_radio::add_gr_header</scope><name>sptr</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

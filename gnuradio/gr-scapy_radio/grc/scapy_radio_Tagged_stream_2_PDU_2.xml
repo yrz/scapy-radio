@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<block>
+  <name>Tagged_stream_2_PDU_2</name>
+  <key>scapy_radio_Tagged_stream_2_PDU_2</key>
+  <category>scapy_radio</category>
+  <import>import scapy_radio</import>
+  <make>scapy_radio.Tagged_stream_2_PDU_2($first_t, $last_t, $buff_size, $debug)</make>
+
+  <param>
+    <name>First tag name</name>
+    <key>first_t</key>
+    <value>tx_sob</value>
+    <type>string</type>
+  </param>
+  <param>
+    <name>Last tag name</name>
+    <key>last_t</key>
+    <value>tx_eob</value>
+    <type>string</type>
+  </param>
+  <param>
+    <name>Buffer size</name>
+    <key>buff_size</key>
+    <value>200000</value>
+    <type>int</type>
+  </param>
+  <param>
+    <name>Debug</name>
+    <key>debug</key>
+    <value>False</value>
+    <type>bool</type>
+    <option>
+      <name>On</name>
+      <key>True</key>
+    </option>
+    <option>
+      <name>Off</name>
+      <key>False</key>
+    </option>
+  </param>
+  
+
+  <sink>
+    <name>in</name>
+    <type>complex</type>
+  </sink>
+
+  <source>
+    <name>out</name>
+    <type>message</type>
+  </source>
+
+</block>

@@ -1,0 +1,10 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/pentest/Downloads/scapy-radio/gnuradio/gr-scapy_radio/swig/scapy_radio_swig_swig_2d0df.cpp
+
