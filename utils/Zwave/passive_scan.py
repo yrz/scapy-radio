@@ -1,7 +1,7 @@
 #!/usr/bin/python2
 
-# Copyright (C) Airbus DS CyberSecurity
-# Authors: Jean-Michel Picod, Arnaud Lebrun, Jonathan Christofer Demay
+# Copyright (C) Airbus Defence and Space
+# Authors: Jean-Michel Picod, Arnaud Lebrun, Jonathan-Christofer Demay
 
 ## This program is free software; you can redistribute it and/or modify it 
 ## under the terms of the GNU General Public License version 3 as
