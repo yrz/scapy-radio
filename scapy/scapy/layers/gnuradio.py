@@ -1,7 +1,7 @@
 ## This file is part of Scapy
 ## See http://www.secdev.org/projects/scapy for more information
-## Copyright (C) Airbus DS CyberSecurity
-## Authors: Jean-Michel Picod, Arnaud Lebrun, Jonathan Christofer Demay
+## Copyright (C) Airbus Defence and Space
+## Authors: Jean-Michel Picod, Arnaud Lebrun, Jonathan-Christofer Demay
 ## This program is published under a GPLv2 license
 
 """
@@ -12,14 +12,31 @@ from scapy.layers.ZWave import *
 from scapy.layers.dot15d4 import *
 from scapy.layers.bluetooth4LE import *
 from scapy.layers.wmbus import *
+from scapy.layers.zigbee import *
+from scapy.layers.sixlowpan import *
+
+_PROTOCOLS = {
+    0: "Unknown",
+    1: "ZWave",
+    2: "802.15.4",
+    3: "Bluetooth LE",
+    4: "W-MBus",
+    5: "Dash7",
+    6: "Sigfox"
+}
 
 
 class GnuradioPacket(Packet):
     name = "Gnuradio header"
     fields_desc = [
-        ByteField("proto", 0),
-        HiddenField(X3BytesField("reserved1", 0)),
-        HiddenField(IntField("reserved2", 0))
+    	ByteEnumField("proto", 0, _PROTOCOLS),
+        ByteField("rfu1",0),
+        ByteField("channel", 0),
+        ByteField("rfu2", 0),
+        ByteField("version", 0),
+        ByteField("preamble", 0),
+        ByteField("rf_psnr", 0),
+        ByteField("extended", 0)
     ]
 
 
@@ -35,7 +52,8 @@ bind_layers(GnuradioPacket, Dot15d4FCS, proto=2)
 bind_layers(GnuradioPacket, BTLE, proto=3)
 
 ## WMBus
-bind_layers(GnuradioPacket, WMBus, proto=4)
+bind_layers(GnuradioPacket, WMBusLinkA, {"proto": 4, "version": 0})
+bind_layers(GnuradioPacket, WMBusLinkB, {"proto": 4, "version": 1})
 
 ## Dash7
 #bind_layers(GnuradioPacket, Dash7, proto=5)

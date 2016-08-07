@@ -10,11 +10,10 @@ It includes:
 * GNU Radio blocks we have written to handle several protocols
 
 
-
 ## Supported radio protocols:
 
 * Bluetooth LE (advertising only)
-* 802.15.4 (used by Zigbee, Xbee, 6LoWPAN)
+* 802.15.4 (used by Zigbee and 6LoWPAN)
 * ZWave (European frequency, 868MHz)
 
 
@@ -22,9 +21,7 @@ It includes:
 
 You need to have a full working GNU Radio 3.7 installation.
 
-**Note**: You will need to edit GRC files if you are running with GNU Radio 3.7.5+
-because they changed the UHD Sink block (there is now 2 inputs, the first one being
-for commands instead of samples).
+**Note**: It has only been tested with GNU Radio 3.7.3 so far.
 
 The provided GRC files have been fully tested with an Ettus B210 SDR but they
 should work just as fine with any other UHD compatible device.
@@ -35,9 +32,21 @@ corresponding Osmocom blocks. Don't forget to set the parameters correctly.
 
 # Installation
 
-We tried to make the installation as easy as possible.
+**Note**: Unless the installation path is modified, the extra blocks we have
+written will be installed into `/usr/local/share/gnuradio/grc/blocks`, you
+must therefore first set local_blocks_path in grc.conf with this path.
 
-If you want to install everything, just launch:
+Beforehand, the following dependencies must also be installed:
+- gnuradio-dev
+- libboost-dev
+- liblog4cpp5-dev
+- lib-uhd-dev
+- doxygen
+- swig
+- cmake
+
+
+Then, if you want to install everything, just launch:
 
 `$ ./install.sh`
 
@@ -46,22 +55,22 @@ using `sudo` command.
 
 Usage:
 
-`$ ./install.sh [scapy|grc|blocks] ...`
+`$ ./install.sh [blocks|grc|scapy] ...`
 
 
 ## Options
 
-### scapy
-This will install or update scapy installation. This option is useful when you
-have added/modified layers and want to make them available in your system
+### blocks
+This will build all the extra blocks we have written for GNU Radio and install
+them into `/usr/local/share/gnuradio/grc/blocks`.
 
 ### grc
 This will copy all the GRC files into `$HOME/.scapy/radio/` and it will also
 convert them automatically into Python files using `grcc` command.
 
-### blocks
-This will build all the extra blocks you have written for GNU Radio and install
-them.
+### scapy
+This will install or update scapy installation. This option is useful when you
+have added/modified layers and want to make them available in your system
 
 
 # Usage
@@ -80,6 +89,7 @@ simple as:
 You can also specify the radio protocol directly to some "radio-enabled" functions:
 
 ` >>> sniff_radio(radio="ZWave")`
+
 
 ## Radio commands
 
@@ -116,4 +126,3 @@ The script has been used to successfully disable a ZWave siren alarm automatical
 ### passive\_scan.py
 
 This script intends to passively scan and map ZWave automation network.
-

@@ -1,7 +1,7 @@
 /* -*- c++ -*- */
 /*
- * Copyright 2013 Airbus DS CyberSecurity.
- * Authors: Jean-Michel Picod, Arnaud Lebrun, Jonathan Christofer Demay
+ * Copyright (C) Airbus Defence and Space.
+ * Authors: Jean-Michel Picod, Arnaud Lebrun, Jonathan-Christofer Demay.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -123,7 +123,7 @@ void whitening_impl::make_frame (pmt::pmt_t msg) {
 	assert(data_len < 256 - 7);
 
 
-	std::memcpy(buf , pmt::blob_data(blob), data_len);
+	std::memcpy(buf , (unsigned char *)pmt::blob_data(blob), data_len);
     whitening_reg = init_whitening_reg;
     packet_whitening(buf+7,data_len-7);
 

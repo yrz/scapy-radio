@@ -1,7 +1,7 @@
 /* -*- c++ -*- */
 /*
- * Copyright 2013 Airbus DS CyberSecurity.
- * Authors: Jean-Michel Picod, Arnaud Lebrun, Jonathan Christofer Demay
+ * Copyright (C) Airbus Defence and Space.
+ * Authors: Jean-Michel Picod, Arnaud Lebrun, Jonathan-Christofer Demay.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -95,7 +95,7 @@ void preamble_prefixer_impl::make_frame (pmt::pmt_t msg) {
 	assert(data_len < 256 - 1);
 
 
-	std::memcpy(preamble + 3, pmt::blob_data(blob) +8, data_len-8);
+	std::memcpy(preamble + 3, (unsigned char *)pmt::blob_data(blob) +8, data_len-8);
 
 	//************************ swap Acces Addr field **********************************
 	char tmp=0;

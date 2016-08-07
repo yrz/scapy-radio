@@ -49,6 +49,7 @@ except ImportError:
 	pass
 
 # import any pure python here
+from uhd_tags import uhd_tags
 #
 
 # ----------------------------------------------------------------

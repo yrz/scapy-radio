@@ -347,6 +347,12 @@ extensions_paths: path or list of paths where extensions are to be looked for
     except_filter = ""
     debug_match = 0
     wepkey = ""
+    dot15d4key = ""
+    dot15d4securitysuite = 1
+    dot15d4extendauth = 1
+    xbee = 0
+    nwdb = None
+    use_dot15d4_database = 0
     route = None # Filed by route.py
     route6 = None # Filed by route6.py
     auto_fragment = 1

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 ## This file is for use with Scapy
 ## See http://www.secdev.org/projects/scapy for more information
-## Copyright (C) Airbus DS CyberSecurity, 2014
-## Authors: Jean-Michel Picod, Arnaud Lebrun, Jonathan Christofer Demay
+## Copyright (C) Airbus Defence and Space
+## Authors: Jean-Michel Huguet, Adam Reziouk, Jonathan-Christofer Demay
 ## This program is published under a GPLv2 license
 
 """
@@ -14,8 +14,23 @@ from scapy.packet import *
 from scapy.fields import *
 import struct
 
+class WMBusManufacturerField(LEShortField):
+####################################################################################################FIX H2I
 
-class WMBusManufacturerField(LEShortEnumField):
+
+    def i2h(self, pkt, x):
+        return chr(((x >> 10) & 0x001F) + 64) + chr(((x >> 5) & 0x001F) + 64) + chr((x & 0x001F) + 64)
+
+    def h2i(self, pkt, x):
+        return "\xAB\xCD"
+        tab = [ord(c) - 64 for c in x]
+        return struct.pack("<H", (tab[0] << 10) + (tab[1] << 5) + tab[2])
+
+class WMBusManufacturerField1(LEShortEnumField):
+    i2s={
+        0: 'Other'
+    }
+
     def __init__(self, name, default):
         Field.__init__(self, name, default, "2s")
 
@@ -28,7 +43,45 @@ class WMBusManufacturerField(LEShortEnumField):
         return struct.pack("<H", (tab[0] << 10) + (tab[1] << 5) + tab[2])
 
 
-class WMBus(Packet):
+class WMBusShortHeader(Packet):
+    name = "WMBus ShortHeader"
+    _error_code = {
+        0: "No error",
+        1: "Application busy",
+        2: "Any application error",
+        3: "Abnormal condition/alarm"
+    }
+    _access = {
+        0: "No access",
+        1: "Temporary no access",
+        2: "Limited access",
+        3: "Unlimited access"
+    }
+    _encryption = {
+        0: "Clear Text",
+        1: "Reserved 1",
+        2: "DES-CBC, null IV",
+        3: "DES-CBC, non-null IV",
+        4: "AES128-CBC, null IV",
+        5: "AES128-CBC, non-null IV",
+        6: "Reserved for new encryption"
+    }
+    fields_desc = [
+        ByteField("access_nr", 0),
+
+        BitEnumField("error", 0, 2, _error_code),
+        FlagsField("status", 0, 6, ["LowPow", "PermErr", "TempErr", "MfgSpec1", "MfgSpec2", "MfgSpec3"]),
+
+        #CW[0]
+        ByteField("config", 0), ### A decouper
+        #CW[1]
+        BitEnumField("accessibility", 0, 2, _access), #bof
+        BitEnumField("sync", 0, 1, ["Asynchronous Packet", "Synchronous (Periodical) Packet"]),
+        HiddenField(BitField("unk", 0, 1),True),
+        BitEnumField("enc", 0, 4, _encryption)
+    ]
+
+class WMBusLinkLayer(Packet):
     device_types = {
         0x00: 'Other',
         0x01: 'Oil',
@@ -141,51 +194,50 @@ class WMBus(Packet):
         0x8C: 'Extended Link Layer I (2 Byte)',
         0x8D: 'Extended Link Layer II (8 Byte)'
     }
-    name = "WMBus"
     fields_desc = [
         ByteField("len", None),
-        BitField("control", 0, 4),
+        BitField("control", 0, 4), #details ?
         BitEnumField("func", 0, 4, _function_codes),
         WMBusManufacturerField("manuf", 0),
         XLEIntField("addr", 0),
-        ByteEnumField("device", 0, device_types),
         ByteField("version", 1),
+        ByteEnumField("device", 0, device_types),
         ByteEnumField("ci", 0, _control_information)
     ]
 
+    def guess_payload_class(self, pay):
 
-class WMBusShortHeader(Packet):
-    name = "WMBus ShortHeader"
-    _error_code = {
-        0: "No error",
-        1: "Application busy",
-        2: "Any application error",
-        3: "Abnormal condition/alarm"
-    }
-    _access = {
-        0: "No access",
-        1: "Temporary no access",
-        2: "Limited access",
-        3: "Unlimited access"
-    }
-    _encryption = {
-        0: "Clear",
-        1: "Reserved 1",
-        2: "DES-CBC, null IV",
-        3: "DES-CBC, non-null IV",
-        4: "AES128-CBC, null IV",
-        5: "AES128-CBC, non-null IV",
-        6: "Reserved for new encryption"
-    }
+        if self.ci in (0x8C, 0x8D):
+            print "extended layer"
+            return WMBusExtLinkLayer
+        elif self.ci in (0x61, 0x65, 0x6A, 0x6E, 0x74, 0x7A, 0x7B, 0x7D, 0x7F, 0x8A):
+            print "short header"
+            return WMBusShortHeader
+        elif self.ci in (0x60, 0x64, 0x6B, 0x6F, 0x72, 0x73, 0x75, 0x7C, 0x7E, 0x80, 0x8B):
+            print "long layer"
+            return WMBusLongHeader
+        else :
+            Packet.guess_payload_class(self, self)
+#################################################################################################### Ajouter NO HEADER
+
+
+class WMBusExtLinkLayer(Packet):
+    name = "WMBus LongHeader"
     fields_desc = [
-        ByteField("access_nr", 0),
-        BitEnumField("error", 0, 2, _error_code),
-        FlagsField("status", 0, 6, ["LowPow", "PermErr", "TempErr", "MfgSpec1", "MfgSpec2", "MfgSpec3"]),
-        ByteField("config", 0),
-        BitEnumField("accessibility", 0, 2, _access),
-        BitField("unk", 0, 2),
-        BitEnumField("enc", 0, 4, _encryption)
+        LongField("id", 0),
+        WMBusManufacturerField("manuf", 0),
+        ByteField("version", 0),
+        ByteEnumField("device", 0, WMBusLinkLayer.device_types),
+        WMBusShortHeader
     ]
+
+
+class WMBusLinkA(WMBusLinkLayer):
+    name = "Link Frame A"
+
+class WMBusLinkB(WMBusLinkLayer):
+    name = "Link Frame B"
+
 
 
 class WMBusLongHeader(Packet):
@@ -194,7 +246,7 @@ class WMBusLongHeader(Packet):
         LongField("id", 0),
         WMBusManufacturerField("manuf", 0),
         ByteField("version", 0),
-        ByteEnumField("device", 0, WMBus.device_types),
+        ByteEnumField("device", 0, WMBusLinkA.device_types),
         WMBusShortHeader
     ]
 
@@ -221,11 +273,7 @@ class WMBusDataRecord(Packet):
     name = "WMBus DataRecord"
 
 
-for i in (0x61, 0x65, 0x6A, 0x6E, 0x74, 0x7A, 0x7B, 0x7D, 0x7F, 0x8A):
-    bind_layers(WMBus, WMBusShortHeader, ci=i)
-for i in (0x60, 0x64, 0x6B, 0x6F, 0x72, 0x73, 0x75, 0x7C, 0x7E, 0x80, 0x8B):
-    bind_layers(WMBus, WMBusLongHeader, ci=i)
-for i in (0x69, 0x70, 0x78, 0x79):
-    bind_layers(WMBus, WMBusDataRecordHeader)
+
+
 bind_layers(WMBusLongHeader, WMBusDataRecordHeader)
 bind_layers(WMBusShortHeader, WMBusDataRecordHeader)

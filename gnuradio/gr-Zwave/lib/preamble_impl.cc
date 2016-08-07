@@ -1,7 +1,7 @@
 /* -*- c++ -*- */
 /*
- * Copyright 2013 Airbus DS CyberSecurity.
- * Authors: Jean-Michel Picod, Arnaud Lebrun, Jonathan Christofer Demay
+ * Copyright (C) Airbus Defence and Space.
+ * Authors: Jean-Michel Picod, Arnaud Lebrun, Jonathan-Christofer Demay.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -81,10 +81,10 @@ void preamble_impl::general_work (pmt::pmt_t msg){
 	assert(data_len < 256 - 1);
 	//Check if Zwave frame
     char temp[256];
-    std::memcpy(temp, pmt::blob_data(blob), data_len);
+    std::memcpy(temp, (unsigned char *)pmt::blob_data(blob), data_len);
     if(temp[0] == ZWAVE){
 
-    std::memcpy(preamble + 1 + PREAMBLE_SIZE, pmt::blob_data(blob)+8, data_len-8); // blob_data+1 to remove the 2 byte header
+    std::memcpy(preamble + 1 + PREAMBLE_SIZE, (unsigned char *)pmt::blob_data(blob)+8, data_len-8); // blob_data+1 to remove the 2 byte header
 
     //2 byte added at the end of the packet
     preamble[data_len+1+PREAMBLE_SIZE-8] = 0xAA;

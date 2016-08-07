@@ -1,7 +1,7 @@
 /* -*- c++ -*- */
 /*
- * Copyright 2014 Airbus DS CyberSecurity.
- * Authors: Jean-Michel Picod, Arnaud Lebrun, Jonathan Christofer Demay
+ * Copyright (C) Airbus Defence and Space.
+ * Authors: Jean-Michel Picod, Arnaud Lebrun, Jonathan-Christofer Demay.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -81,7 +81,7 @@ void preamble_prefixer_scapy_impl::make_frame (pmt::pmt_t msg)
 
         buf[5] = data_len-8;
 
-        std::memcpy(buf + 6, pmt::blob_data(blob)+8, data_len - 8);
+        std::memcpy(buf + 6, (unsigned char *)pmt::blob_data(blob)+8, data_len - 8);
 
         pmt::pmt_t packet = pmt::make_blob(buf, data_len + 6-8);
 

@@ -10,6 +10,7 @@
 %{
 #include "scapy_radio/add_gr_header.h"
 #include "scapy_radio/strip_gr_header.h"
+#include "scapy_radio/Tagged_stream_2_PDU_2.h"
 %}
 
 
@@ -17,3 +18,5 @@
 GR_SWIG_BLOCK_MAGIC2(scapy_radio, add_gr_header);
 %include "scapy_radio/strip_gr_header.h"
 GR_SWIG_BLOCK_MAGIC2(scapy_radio, strip_gr_header);
+%include "scapy_radio/Tagged_stream_2_PDU_2.h"
+GR_SWIG_BLOCK_MAGIC2(scapy_radio, Tagged_stream_2_PDU_2);

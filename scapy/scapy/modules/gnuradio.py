@@ -1,7 +1,7 @@
 ## This file is part of Scapy
 ## See http://www.secdev.org/projects/scapy for more information
-## Copyright (C) Airbus DS CyberSecurity
-## Authors: Jean-Michel Picod, Arnaud Lebrun, Jonathan Christofer Demay
+## Copyright (C) Airbus Defence and Space
+## Authors: Jean-Michel Picod, Arnaud Lebrun, Jonathan-Christofer Demay
 ## This program is published under a GPLv2 license
 
 """
@@ -18,6 +18,47 @@ from scapy.supersocket import SuperSocket
 from scapy import sendrecv
 from scapy import main
 import scapy.layers.gnuradio
+
+
+class GnuradioSocket_in(SuperSocket):
+    desc = "readOnly UDP Gnuradio socket"
+
+    def __init__(self, peer="127.0.0.1"):
+        SuperSocket.__init__(self, socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+        self.rx_addr = (peer, 52002)
+        self.ins.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 0)
+        try:
+            self.ins.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 0)
+        except AttributeError:
+            pass
+        self.ins.bind(self.rx_addr)
+
+    def recv(self, x=MTU):
+        data, addr = self.ins.recvfrom(x)
+        p = scapy.layers.gnuradio.GnuradioPacket(data)
+        return p
+
+
+class GnuradioSocket_out(SuperSocket):
+    desc = "writeOnly UDP Gnuradio socket"
+
+    def __init__(self, peer="127.0.0.1"):
+        SuperSocket.__init__(self, socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+        self.outs = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+        self.tx_addr = (peer, 52001)
+        self.outs.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 0)
+        try:
+            self.outs.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 0)
+        except AttributeError:
+            pass
+
+    def send(self, pkt):
+        if not pkt.haslayer(scapy.layers.gnuradio.GnuradioPacket):
+            pkt = scapy.layers.gnuradio.GnuradioPacket()/pkt
+        sx = str(pkt)
+        if hasattr(pkt, "sent_time"):
+            pkt.sent_time = time.time()
+        self.outs.sendto(sx, self.tx_addr)
 
 
 class GnuradioSocket(SuperSocket):
@@ -217,7 +258,7 @@ atexit.register(gnuradio_exit, conf)
 conf.L2socket = GnuradioSocket
 conf.L3socket = GnuradioSocket
 conf.L2listen = GnuradioSocket
-for l in ["ZWave", "gnuradio", "dot15d4", "bluetooth4LE", "wmbus"]:
+for l in ["ZWave", "gnuradio", "dot15d4", "sixlowpan", "zigbee", "bluetooth4LE", "wmbus"]:
     main.load_layer(l)
 conf.gr_modulations = {}
 conf.gr_process = None
