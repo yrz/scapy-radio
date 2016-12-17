@@ -1,0 +1,7 @@
+/*!
+ * \defgroup block GNU Radio DOT15D4 C++ Signal Processing Blocks
+ * \brief All C++ blocks that can be used from the DOT15D4 GNU Radio
+ *        module are listed here or in the subcategories below.
+ *
+ */
+

@@ -1,0 +1,76 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.8">
+  <compounddef id="classgr_1_1sigfox_1_1preamble__prefixer__scapy" kind="class" prot="public">
+    <compoundname>gr::sigfox::preamble_prefixer_scapy</compoundname>
+    <basecompoundref prot="public" virt="virtual">block</basecompoundref>
+    <derivedcompoundref refid="classgr_1_1sigfox_1_1preamble__prefixer__scapy__impl" prot="public" virt="non-virtual">gr::sigfox::preamble_prefixer_scapy_impl</derivedcompoundref>
+    <includes refid="preamble__prefixer__scapy_8h" local="no">preamble_prefixer_scapy.h</includes>
+      <sectiondef kind="public-type">
+      <memberdef kind="typedef" id="classgr_1_1sigfox_1_1preamble__prefixer__scapy_1ae5a19e6fcaa844c75f190b36f09a029c" prot="public" static="no">
+        <type>boost::shared_ptr&lt; <ref refid="classgr_1_1sigfox_1_1preamble__prefixer__scapy" kindref="compound">preamble_prefixer_scapy</ref> &gt;</type>
+        <definition>typedef boost::shared_ptr&lt;preamble_prefixer_scapy&gt; gr::sigfox::preamble_prefixer_scapy::sptr</definition>
+        <argsstring></argsstring>
+        <name>sptr</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/include/sigfox/preamble_prefixer_scapy.h" line="39" column="1" bodyfile="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/include/sigfox/preamble_prefixer_scapy.h" bodystart="39" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-static-func">
+      <memberdef kind="function" id="classgr_1_1sigfox_1_1preamble__prefixer__scapy_1a46bf9a07b2dbd5bcd4ff166a9c06c0bb" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classgr_1_1sigfox_1_1preamble__prefixer__scapy_1ae5a19e6fcaa844c75f190b36f09a029c" kindref="member">sptr</ref></type>
+        <definition>static sptr gr::sigfox::preamble_prefixer_scapy::make</definition>
+        <argsstring>()</argsstring>
+        <name>make</name>
+        <briefdescription>
+<para>Return a shared_ptr to a new instance of <ref refid="classgr_1_1sigfox_1_1preamble__prefixer__scapy" kindref="compound">sigfox::preamble_prefixer_scapy</ref>. </para>        </briefdescription>
+        <detaileddescription>
+<para>To avoid accidental use of raw pointers, <ref refid="classgr_1_1sigfox_1_1preamble__prefixer__scapy" kindref="compound">sigfox::preamble_prefixer_scapy</ref>&apos;s constructor is in a private implementation class. <ref refid="classgr_1_1sigfox_1_1preamble__prefixer__scapy_1a46bf9a07b2dbd5bcd4ff166a9c06c0bb" kindref="member">sigfox::preamble_prefixer_scapy::make</ref> is the public interface for creating new instances. </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/include/sigfox/preamble_prefixer_scapy.h" line="49" column="1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+<para>&lt;+description of block+&gt; </para>    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="23">
+        <label>gr::sigfox::preamble_prefixer_scapy</label>
+        <link refid="classgr_1_1sigfox_1_1preamble__prefixer__scapy"/>
+        <childnode refid="24" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="25">
+        <label>gr::sigfox::preamble_prefixer_scapy_impl</label>
+        <link refid="classgr_1_1sigfox_1_1preamble__prefixer__scapy__impl"/>
+        <childnode refid="23" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="24">
+        <label>gr::block</label>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="26">
+        <label>gr::sigfox::preamble_prefixer_scapy</label>
+        <link refid="classgr_1_1sigfox_1_1preamble__prefixer__scapy"/>
+        <childnode refid="27" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="27">
+        <label>gr::block</label>
+      </node>
+    </collaborationgraph>
+    <location file="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/include/sigfox/preamble_prefixer_scapy.h" line="37" column="1" bodyfile="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/include/sigfox/preamble_prefixer_scapy.h" bodystart="36" bodyend="50"/>
+    <listofallmembers>
+      <member refid="classgr_1_1sigfox_1_1preamble__prefixer__scapy_1a46bf9a07b2dbd5bcd4ff166a9c06c0bb" prot="public" virt="non-virtual"><scope>gr::sigfox::preamble_prefixer_scapy</scope><name>make</name></member>
+      <member refid="classgr_1_1sigfox_1_1preamble__prefixer__scapy_1ae5a19e6fcaa844c75f190b36f09a029c" prot="public" virt="non-virtual"><scope>gr::sigfox::preamble_prefixer_scapy</scope><name>sptr</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

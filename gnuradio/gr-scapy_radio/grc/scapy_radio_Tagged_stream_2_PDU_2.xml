@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <block>
-  <name>Tagged_stream_2_PDU_2</name>
+  <name>ScapyRadio TS to PDU</name>
   <key>scapy_radio_Tagged_stream_2_PDU_2</key>
-  <category>scapy_radio</category>
+  <category>[Scapy Radio]/Core</category>
   <import>import scapy_radio</import>
   <make>scapy_radio.Tagged_stream_2_PDU_2($first_t, $last_t, $buff_size, $debug)</make>
 

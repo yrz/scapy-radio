@@ -9,10 +9,14 @@
 """
 Utility functions for IPv6.
 """
+import random
+import socket
+import struct
 
-from config import conf
-from data import *
-from utils import *
+from scapy.config import conf
+from scapy.data import *
+from scapy.utils import *
+from scapy.pton_ntop import *
 
 
 def construct_source_candidate_set(addr, plen, laddr, loname):
@@ -390,6 +394,7 @@ def in6_getLocalUniquePrefix():
     j = int((tod - i)*(2**32))
     tod = struct.pack("!II", i,j)
     # TODO: Add some check regarding system address gathering
+    from scapy.arch import get_if_raw_hwaddr
     rawmac = get_if_raw_hwaddr(conf.iface6)[1]
     mac = ":".join(map(lambda x: "%.02x" % ord(x), list(rawmac)))
     # construct modified EUI-64 ID
@@ -421,8 +426,8 @@ def in6_getRandomizedIfaceId(ifaceid, previous=None):
 
     s = ""
     if previous is None:
-        d = "".join(map(chr, range(256)))
-        for i in range(8):
+        d = "".join(chr(x) for x in xrange(256))
+        for _ in xrange(8):
             s += random.choice(d)
         previous = s
     s = inet_pton(socket.AF_INET6, "::"+ifaceid)[8:] + previous
@@ -456,7 +461,7 @@ def in6_ctop(addr):
         j = _rfc1924map.index(c)
         i = 85*i + j
     res = []
-    for j in range(4):
+    for j in xrange(4):
         res.append(struct.pack("!I", i%2**32))
         i = i/(2**32)
     res.reverse()
@@ -474,7 +479,7 @@ def in6_ptoc(addr):
         return None
     res = 0
     m = [2**96, 2**64, 2**32, 1]
-    for i in range(4):
+    for i in xrange(4):
         res += d[i]*m[i]
     rem = res
     res = []
@@ -648,6 +653,16 @@ def in6_isincluded(addr, prefix, plen):
     zero = inet_pton(socket.AF_INET6, prefix)
     return zero == in6_and(temp, pref)
 
+def in6_isllsnmaddr(str):
+    """
+    Return True if provided address is a link-local solicited node
+    multicast address, i.e. belongs to ff02::1:ff00:0/104. False is
+    returned otherwise.
+    """
+    temp = in6_and("\xff"*13+"\x00"*3, inet_pton(socket.AF_INET6, str))
+    temp2 = '\xff\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\xff\x00\x00\x00'
+    return temp == temp2
+
 def in6_isdocaddr(str):
     """
     Returns True if provided address in printable format belongs to
@@ -776,7 +791,7 @@ def in6_get_common_plen(a, b):
     Return common prefix length of IPv6 addresses a and b.
     """
     def matching_bits(byte1, byte2):
-        for i in range(8):
+        for i in xrange(8):
             cur_mask = 0x80 >> i
             if (byte1 & cur_mask) != (byte2 & cur_mask):
                 return i
@@ -784,8 +799,18 @@ def in6_get_common_plen(a, b):
         
     tmpA = inet_pton(socket.AF_INET6, a)
     tmpB = inet_pton(socket.AF_INET6, b)
-    for i in range(16):
+    for i in xrange(16):
         mbits = matching_bits(ord(tmpA[i]), ord(tmpB[i]))
         if mbits != 8:
             return 8*i + mbits
     return 128
+
+def in6_isvalid(address):
+    """Return True if 'address' is a valid IPv6 address string, False
+       otherwise."""
+
+    try:
+        socket.inet_pton(socket.AF_INET6, address)
+        return True
+    except:
+        return False

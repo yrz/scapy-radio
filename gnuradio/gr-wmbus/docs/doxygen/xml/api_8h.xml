@@ -1,0 +1,55 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.8">
+  <compounddef id="api_8h" kind="file">
+    <compoundname>api.h</compoundname>
+    <includes local="no">gnuradio/attributes.h</includes>
+    <includedby refid="preamble_8h" local="no">preamble.h</includedby>
+    <incdepgraph>
+      <node id="22">
+        <label>gnuradio/attributes.h</label>
+      </node>
+      <node id="21">
+        <label>api.h</label>
+        <link refid="api.h"/>
+        <childnode refid="22" relation="include">
+        </childnode>
+      </node>
+    </incdepgraph>
+    <invincdepgraph>
+      <node id="25">
+        <label>preamble_impl.h</label>
+        <link refid="preamble__impl_8h"/>
+      </node>
+      <node id="23">
+        <label>api.h</label>
+        <link refid="api.h"/>
+        <childnode refid="24" relation="include">
+        </childnode>
+      </node>
+      <node id="24">
+        <label>preamble.h</label>
+        <link refid="preamble_8h"/>
+        <childnode refid="25" relation="include">
+        </childnode>
+      </node>
+    </invincdepgraph>
+      <sectiondef kind="define">
+      <memberdef kind="define" id="api_8h_1ac37c436037e658e30591849d19697d6c" prot="public" static="no">
+        <name>WMBUS_API</name>
+        <initializer>__GR_ATTR_IMPORT</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/pentest/Downloads/scapy-radio/gnuradio/gr-wmbus/include/wmbus/api.h" line="30" column="12" bodyfile="/home/pentest/Downloads/scapy-radio/gnuradio/gr-wmbus/include/wmbus/api.h" bodystart="30" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/pentest/Downloads/scapy-radio/gnuradio/gr-wmbus/include/wmbus/api.h"/>
+  </compounddef>
+</doxygen>

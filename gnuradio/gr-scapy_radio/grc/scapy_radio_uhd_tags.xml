@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <block>
-  <name>uhd_tags</name>
+  <name>ScapyRadio UHD tags</name>
   <key>scapy_radio_uhd_tags</key>
-  <category>scapy_radio</category>
+  <category>[Scapy Radio]/Core</category>
   <import>import scapy_radio</import>
   <make>scapy_radio.uhd_tags($len_tag, $start_tag, $end_tag)</make>
 

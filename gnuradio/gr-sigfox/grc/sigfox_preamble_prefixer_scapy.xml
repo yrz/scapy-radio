@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<block>
+  <name>Sigfox Preamble</name>
+  <key>sigfox_preamble_prefixer_scapy</key>
+  <category>[Scapy Radio]/Sigfox</category>
+  <import>import sigfox</import>
+  <make>sigfox.preamble_prefixer_scapy()</make>
+  <sink>
+    <name>in</name>
+    <type>message</type>
+  </sink>
+  <source>
+    <name>out</name>
+    <type>message</type>
+  </source>
+
+</block>

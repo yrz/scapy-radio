@@ -41,7 +41,8 @@ class BGPIPField(Field):
 		return s[l:], self.m2i(pkt,s[:l])
 	def m2i(self,pkt,m):
 		mask = struct.unpack(">B",m[0])[0]
-		ip = "".join( [ m[i + 1] if i < self.mask2iplen(mask) else '\x00' for i in range(4)] )
+		ip = "".join(m[i + 1] if i < self.mask2iplen(mask) else '\x00'
+                     for i in xrange(4))
 		return (mask,inet_ntoa(ip))
 
 class BGPHeader(Packet):
@@ -164,5 +165,6 @@ bind_layers( BGPHeader,       BGPHeader,   type=4)
 
 
 if __name__ == "__main__":
+    from scapy.main import interact
     interact(mydict=globals(), mybanner="BGP addon .05")
 

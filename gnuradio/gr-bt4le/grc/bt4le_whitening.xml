@@ -1,7 +1,7 @@
 <block>
-  <name>Whitening</name>
+  <name>BT4LE Whitening</name>
   <key>bt4le_whitening</key>
-  <category>BT4LE</category>
+  <category>[Scapy Radio]/BT4LE</category>
   <import>import bt4le</import>
   <make>bt4le.whitening($chan_nbr)</make>
   <param>

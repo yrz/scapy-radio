@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygenindex xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="index.xsd" version="1.8.8">
+  <compound refid="classgr_1_1sigfox_1_1packet__sink__scapy" kind="class"><name>gr::sigfox::packet_sink_scapy</name>
+    <member refid="classgr_1_1sigfox_1_1packet__sink__scapy_1a7ef0b6df66ef5529105eea4c48798e97" kind="typedef"><name>sptr</name></member>
+    <member refid="classgr_1_1sigfox_1_1packet__sink__scapy_1ac0aec60958919dea3f395057c50c653b" kind="function"><name>make</name></member>
+  </compound>
+  <compound refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl" kind="class"><name>gr::sigfox::packet_sink_scapy_impl</name>
+    <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a3fd38631cd5bfc6ac49a54d9d605f6c3" kind="enum"><name>@0</name></member>
+    <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a3fd38631cd5bfc6ac49a54d9d605f6c3a86fc2527e99d382cd4ef28507bd274a0" kind="enumvalue"><name>PREAMBLE_SEARCH</name></member>
+    <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a3fd38631cd5bfc6ac49a54d9d605f6c3a99131be20f62c0a38085995ebb16abd0" kind="enumvalue"><name>DATA</name></member>
+    <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a3fd38631cd5bfc6ac49a54d9d605f6c3a1065ce3e51f801277017647ab02c3e53" kind="enumvalue"><name>SIZE</name></member>
+    <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a3fd38631cd5bfc6ac49a54d9d605f6c3a074be897f9f27f566ec71509fb79dfd1" kind="enumvalue"><name>CRC_HMAC</name></member>
+    <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a2ecbd98cedf28ac69c4e9bb632318cc7" kind="variable"><name>state</name></member>
+    <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a113d9a1586594041b538baa988044359" kind="variable"><name>frame_shift_reg</name></member>
+    <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a133c5e879230654d120e44339da3e433" kind="variable"><name>frame_shift</name></member>
+    <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a8b97b36d30587424c61c87d47ba87edc" kind="variable"><name>data_shift</name></member>
+    <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1ac3066dc715d36c1396e2ac01bd8d3c4d" kind="variable"><name>frame_struct</name></member>
+    <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a607e444abe549195e2905958a01eb17b" kind="variable"><name>buf</name></member>
+    <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1ad4b68f7f74e17c3a08f3718bfe456f90" kind="variable"><name>tableau</name></member>
+    <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1adb6045ea8b687b0657db346e6cd4bae8" kind="variable"><name>paquet</name></member>
+    <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1aa836d89c0adb81a5062bd7fb28d532b6" kind="variable"><name>toto</name></member>
+    <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1ac1bf324b2bc60cb2aafbc169443f62d9" kind="variable"><name>taille</name></member>
+    <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a3b7751bfbe575bc5070f568495bdaafa" kind="variable"><name>cpt</name></member>
+    <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a7f692359a673c84825b97fd05fb3fa6e" kind="variable"><name>i</name></member>
+    <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a8f5d6ce1933a359e22d7880ca013c989" kind="variable"><name>nbre_paquet</name></member>
+    <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a1f0bae6574a9eb715ce96b664b4be58d" kind="function"><name>packet_sink_scapy_impl</name></member>
+    <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a3c7132df7fa0cb2918cb607893074762" kind="function"><name>~packet_sink_scapy_impl</name></member>
+    <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1af7cbe1a0f76ac811808acd738d3d38bb" kind="function"><name>crc_computing</name></member>
+    <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a211e4c8c339a3feb86be1a44e4daec76" kind="function"><name>forecast</name></member>
+    <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a56735377ebcb8c659775d2b85311cf0f" kind="function"><name>size_paquet</name></member>
+    <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a30e7547ac47cd3b7806cc1ae7929aba9" kind="function"><name>general_work</name></member>
+  </compound>
+  <compound refid="classgr_1_1sigfox_1_1preamble__prefixer__scapy" kind="class"><name>gr::sigfox::preamble_prefixer_scapy</name>
+    <member refid="classgr_1_1sigfox_1_1preamble__prefixer__scapy_1ae5a19e6fcaa844c75f190b36f09a029c" kind="typedef"><name>sptr</name></member>
+    <member refid="classgr_1_1sigfox_1_1preamble__prefixer__scapy_1a46bf9a07b2dbd5bcd4ff166a9c06c0bb" kind="function"><name>make</name></member>
+  </compound>
+  <compound refid="classgr_1_1sigfox_1_1preamble__prefixer__scapy__impl" kind="class"><name>gr::sigfox::preamble_prefixer_scapy_impl</name>
+    <member refid="classgr_1_1sigfox_1_1preamble__prefixer__scapy__impl_1a3b5a03b3036379ac8392e40fcfd7ff30" kind="variable"><name>preamble</name></member>
+    <member refid="classgr_1_1sigfox_1_1preamble__prefixer__scapy__impl_1af0a392db211c35d45aad612c51e1d4a6" kind="function"><name>preamble_prefixer_scapy_impl</name></member>
+    <member refid="classgr_1_1sigfox_1_1preamble__prefixer__scapy__impl_1a87b7aba6554a1c15a322286bca9ff7f1" kind="function"><name>~preamble_prefixer_scapy_impl</name></member>
+    <member refid="classgr_1_1sigfox_1_1preamble__prefixer__scapy__impl_1a0ea879628e0d905bfbf6d099d3c03c07" kind="function"><name>forecast</name></member>
+    <member refid="classgr_1_1sigfox_1_1preamble__prefixer__scapy__impl_1a8884b0636e7f4d4493a2be79060abaf3" kind="function"><name>general_work</name></member>
+  </compound>
+  <compound refid="structgr_1_1sigfox_1_1packet__sink__scapy__impl_1_1s__frame__struct" kind="struct"><name>gr::sigfox::packet_sink_scapy_impl::s_frame_struct</name>
+    <member refid="structgr_1_1sigfox_1_1packet__sink__scapy__impl_1_1s__frame__struct_1a2327965e0614b7af122256bbbe13058c" kind="variable"><name>home_id</name></member>
+    <member refid="structgr_1_1sigfox_1_1packet__sink__scapy__impl_1_1s__frame__struct_1a21bc4b5b0e935183402267a02b278d31" kind="variable"><name>length</name></member>
+    <member refid="structgr_1_1sigfox_1_1packet__sink__scapy__impl_1_1s__frame__struct_1ab25c5f709d07ff7d4712ae81f31f7cf5" kind="variable"><name>device_id</name></member>
+    <member refid="structgr_1_1sigfox_1_1packet__sink__scapy__impl_1_1s__frame__struct_1ae123a0561cec5c010b6e2142a16962d4" kind="variable"><name>frame_ctrl</name></member>
+    <member refid="structgr_1_1sigfox_1_1packet__sink__scapy__impl_1_1s__frame__struct_1a347d6736d110f24b97d6cb6f67afbc0b" kind="variable"><name>dest_id</name></member>
+    <member refid="structgr_1_1sigfox_1_1packet__sink__scapy__impl_1_1s__frame__struct_1a2a3a3c4ae5990c3de7d7de8bde3fe5e3" kind="variable"><name>frame</name></member>
+    <member refid="structgr_1_1sigfox_1_1packet__sink__scapy__impl_1_1s__frame__struct_1aa8cc110c124ea50beea5f78aeff07ae7" kind="variable"><name>CRC</name></member>
+  </compound>
+  <compound refid="namespacegr" kind="namespace"><name>gr</name>
+  </compound>
+  <compound refid="namespacegr_1_1sigfox" kind="namespace"><name>gr::sigfox</name>
+  </compound>
+  <compound refid="namespacestd" kind="namespace"><name>std</name>
+  </compound>
+  <compound refid="api_8h" kind="file"><name>api.h</name>
+    <member refid="api_8h_1ad873b9e967e7b09f2903a04d6bc2ad0b" kind="define"><name>SIGFOX_API</name></member>
+  </compound>
+  <compound refid="group__defs_8dox" kind="file"><name>group_defs.dox</name>
+  </compound>
+  <compound refid="main__page_8dox" kind="file"><name>main_page.dox</name>
+  </compound>
+  <compound refid="packet__sink__scapy_8h" kind="file"><name>packet_sink_scapy.h</name>
+  </compound>
+  <compound refid="packet__sink__scapy__impl_8h" kind="file"><name>packet_sink_scapy_impl.h</name>
+    <member refid="packet__sink__scapy__impl_8h_1a2695c8d0d1801e72d7b2444d551e8254" kind="define"><name>MAX_PDU_SIZE</name></member>
+  </compound>
+  <compound refid="preamble__prefixer__scapy_8h" kind="file"><name>preamble_prefixer_scapy.h</name>
+  </compound>
+  <compound refid="preamble__prefixer__scapy__impl_8h" kind="file"><name>preamble_prefixer_scapy_impl.h</name>
+  </compound>
+  <compound refid="group__block" kind="group"><name>block</name>
+  </compound>
+  <compound refid="dir_d44c64559bbebec7f509842c48db8b23" kind="dir"><name>include</name>
+  </compound>
+  <compound refid="dir_cd7ed5a310b21b993d160ee8e422fd5c" kind="dir"><name>sigfox</name>
+  </compound>
+  <compound refid="indexpage" kind="page"><name>index</name>
+  </compound>
+</doxygenindex>

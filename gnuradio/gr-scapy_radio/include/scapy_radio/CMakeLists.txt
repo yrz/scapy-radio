@@ -22,7 +22,8 @@
 ########################################################################
 install(FILES
     api.h
-    add_gr_header.h
-    strip_gr_header.h
-    Tagged_stream_2_PDU_2.h DESTINATION include/scapy_radio
+    #add_gr_header.h
+    #strip_gr_header.h
+    Tagged_stream_2_PDU_2.h
+    ScapyRadio_PDU_to_TS.h DESTINATION include/scapy_radio
 )

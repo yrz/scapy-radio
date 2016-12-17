@@ -11,11 +11,15 @@ DHCPv6: Dynamic Host Configuration Protocol for IPv6. [RFC 3315]
 """
 
 import socket
+
 from scapy.packet import *
 from scapy.fields import *
+from scapy.data import *
 from scapy.utils6 import *
+from scapy.themes import Color
 from scapy.layers.inet6 import *
 from scapy.ansmachine import AnsweringMachine
+from scapy.sendrecv import *
 
 #############################################################################
 # Helpers                                                                  ##
@@ -143,7 +147,8 @@ dhcp6types = {   1:"SOLICIT",
 
 duidtypes = { 1: "Link-layer address plus time", 
               2: "Vendor-assigned unique ID based on Enterprise Number",
-              3: "Link-layer Address" }
+              3: "Link-layer Address",
+              4: "UUID" }
 
 # DUID hardware types - RFC 826 - Extracted from 
 # http://www.iana.org/assignments/arp-parameters on 31/10/06
@@ -232,9 +237,15 @@ class DUID_LL(Packet):  # sect 9.4 RFC 3315
                     XShortEnumField("hwtype", 1, duidhwtypes), 
                     _LLAddrField("lladdr", ETHER_ANY) ]
 
+class DUID_UUID(Packet):  # RFC 6355
+    name = "DUID - Based on UUID"
+    fields_desc = [ ShortEnumField("type", 4, duidtypes),
+                    StrFixedLenField("uuid","", 16) ]
+
 duid_cls = { 1: "DUID_LLT",
              2: "DUID_EN",
-             3: "DUID_LL"}
+             3: "DUID_LL",
+             4: "DUID_UUID"}
 
 #####################################################################
 ###                   DHCPv6 Options classes                      ###
@@ -249,14 +260,14 @@ class _DHCP6OptGuessPayload(Packet):
         return cls
 
 class DHCP6OptUnknown(_DHCP6OptGuessPayload): # A generic DHCPv6 Option
-    name = "Unknown DHCPv6 OPtion"
+    name = "Unknown DHCPv6 Option"
     fields_desc = [ ShortEnumField("optcode", 0, dhcp6opts), 
                     FieldLenField("optlen", None, length_of="data", fmt="!H"),
                     StrLenField("data", "",
                                 length_from = lambda pkt: pkt.optlen)]
 
 class _DUIDField(PacketField):
-    holds_packets=1
+    __slots__ = ["length_from"]
     def __init__(self, name, default, length_from=None):
         StrField.__init__(self, name, default)
         self.length_from = length_from
@@ -299,7 +310,6 @@ class DHCP6OptIAAddress(_DHCP6OptGuessPayload):    # RFC sect 22.6
                     IP6Field("addr", "::"),
                     IntField("preflft", 0),
                     IntField("validlft", 0),
-                    XIntField("iaid", None),
                     StrLenField("iaaddropts", "",
                                 length_from  = lambda pkt: pkt.optlen - 24) ]
     def guess_payload_class(self, payload):
@@ -650,38 +660,6 @@ class DHCP6OptReconfAccept(_DHCP6OptGuessPayload):   # RFC sect 22.20
     fields_desc = [ ShortEnumField("optcode", 20, dhcp6opts),
                     ShortField("optlen", 0)]
 
-# As required in Sect 8. of RFC 3315, Domain Names must be encoded as 
-# described in section 3.1 of RFC 1035
-# XXX Label should be at most 63 octets in length : we do not enforce it
-#     Total length of domain should be 255 : we do not enforce it either
-class DomainNameListField(StrLenField):
-    islist = 1
-
-    def i2len(self, pkt, x):
-        return len(self.i2m(pkt, x))
-
-    def m2i(self, pkt, x):
-        res = []
-        while x:
-            cur = []
-            while x and x[0] != '\x00':
-                l = ord(x[0])
-                cur.append(x[1:l+1])
-                x = x[l+1:]
-            res.append(".".join(cur))
-            if x and x[0] == '\x00':
-                x = x[1:]
-        return res
-
-    def i2m(self, pkt, x):
-        def conditionalTrailingDot(z):
-            if z and z[-1] == '\x00':
-                return z
-            return z+'\x00'
-        res = ""
-        tmp = map(lambda y: map((lambda z: chr(len(z))+z), y.split('.')), x)
-        return "".join(map(lambda x: conditionalTrailingDot("".join(x)), tmp))
-
 class DHCP6OptSIPDomains(_DHCP6OptGuessPayload):       #RFC3319
     name = "DHCP6 Option - SIP Servers Domain Name List"
     fields_desc = [ ShortEnumField("optcode", 21, dhcp6opts),
@@ -888,13 +866,6 @@ DHCP6PrefVal="" # la valeur de preference a utiliser dans
 #            INFORMATION REQUEST
 # - relay  : RELAY-FORW (toward server)
 
-class _DHCP6GuessPayload(Packet):
-    def guess_payload_class(self, payload):
-        if len(payload) > 1 :
-            print ord(payload[0])
-            return get_cls(dhcp6opts.get(ord(payload[0]),"DHCP6OptUnknown"), conf.raw_layer)
-        return conf.raw_layer
-
 #####################################################################
 ## DHCPv6 messages sent between Clients and Servers (types 1 to 11)
 # Comme specifie en section 15.1 de la RFC 3315, les valeurs de
@@ -902,7 +873,7 @@ class _DHCP6GuessPayload(Packet):
 # a chaque emission et doivent matcher dans les reponses faites par
 # les clients
 class DHCP6(_DHCP6OptGuessPayload):
-    name = "DHCPv6 Generic Message)"
+    name = "DHCPv6 Generic Message"
     fields_desc = [ ByteEnumField("msgtype",None,dhcp6types),
                     X3BytesField("trid",0x000000) ]
     overload_fields = { UDP: {"sport": 546, "dport": 547} }
@@ -1053,7 +1024,10 @@ class DHCP6_Reply(DHCP6):
     overload_fields = { UDP: {"sport": 547, "dport": 546} }
     
     def answers(self, other):
-        return (isinstance(other, DHCP6_InfoRequest) and
+
+        types = (DHCP6_InfoRequest, DHCP6_Confirm, DHCP6_Rebind, DHCP6_Decline, DHCP6_Request, DHCP6_Release, DHCP6_Renew)
+
+        return (isinstance(other, types) and
                 self.trid == other.trid)
 
 #####################################################################
@@ -1115,9 +1089,6 @@ class DHCP6_InfoRequest(DHCP6):
     name = "DHCPv6 Information Request Message"    
     msgtype = 11 
     
-    def hashret(self): 
-        return struct.pack("!I", self.trid)[1:3]
-
 #####################################################################
 # sent between Relay Agents and Servers 
 #
@@ -1131,7 +1102,7 @@ class DHCP6_InfoRequest(DHCP6):
 # address or other multicast addresses, it sets the Hop Limit field to
 # 32. 
 
-class DHCP6_RelayForward(_DHCP6GuessPayload,Packet):
+class DHCP6_RelayForward(_DHCP6OptGuessPayload,Packet):
     name = "DHCPv6 Relay Forward Message (Relay Agent/Server Message)"
     fields_desc = [ ByteEnumField("msgtype", 12, dhcp6types),
                     ByteField("hopcount", None),
@@ -1165,7 +1136,7 @@ class DHCP6_RelayReply(DHCP6_RelayForward):
         return inet_pton(socket.AF_INET6, self.peeraddr)
     def answers(self, other):
         return (isinstance(other, DHCP6_RelayForward) and
-                self.count == other.count and
+                self.hopcount == other.hopcount and
                 self.linkaddr == other.linkaddr and
                 self.peeraddr == other.peeraddr )
 

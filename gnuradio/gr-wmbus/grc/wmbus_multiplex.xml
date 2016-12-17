@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<block>
+  <name>WMBus Multiplex</name>
+  <key>wmbus_multiplex</key>
+  <category>[Scapy Radio]/WM-Bus</category>
+  <import>import wmbus</import>
+  <make>wmbus.multiplex()</make>
+
+  <sink>
+    <name>in</name>
+    <type>complex</type>
+  </sink>
+
+  <source>
+    <name>out</name>
+    <type>message</type>
+  </source>
+
+</block>

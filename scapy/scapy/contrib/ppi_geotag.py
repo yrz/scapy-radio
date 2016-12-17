@@ -167,6 +167,7 @@ class UTCTimeField(IntField):
         return "%s (%d)" % (t, x)
 
 class LETimeField(UTCTimeField,LEIntField):
+    __slots__ = ["epoch", "delta", "strf"]
     def __init__(self, name, default, epoch=time.gmtime(0), strf="%a, %d %b %Y %H:%M:%S +0000"):
         LEIntField.__init__(self, name, default)
         self.epoch = epoch
@@ -239,8 +240,8 @@ class HCSIFlagsField(FlagsField):
         if val is None:
             val = 0
             if (pkt):
-                for i in range(len(self.names)):
-                    name = self.names[i][0]
+                for i, name in enumerate(self.names):
+                    name = name[0]
                     value = pkt.getfieldval(name)
                     if value is not None:
                         val |= 1 << i
@@ -259,11 +260,9 @@ class HCSIAppField(StrFixedLenField):
         return StrFixedLenField.__init__(self, name, default, length=60)
 
 def _FlagsList(myfields):
-    flags = []
-    for i in range(32):
-        flags.append("Reserved%02d" % i)
-    for i in myfields.keys():
-        flags[i] = myfields[i]
+    flags = ["Reserved%02d" % i for i in xrange(32)]
+    for i, value in myfields.iteritems():
+        flags[i] = value
     return flags
 
 # Define all geolocation-tag flags lists
@@ -303,10 +302,10 @@ def _HCSITest(pkt, ibit, name):
 # Wrap optional fields in ConditionalField, add HCSIFlagsField
 def _HCSIBuildFields(fields):
     names = [f.name for f in fields]
-    cond_fields = [ HCSIFlagsField('present', None, -len(names), names)]
-    for i in range(len(names)):
+    cond_fields = [HCSIFlagsField('present', None, -len(names), names)]
+    for i, name in enumerate(names):
         ibit = 1 << i
-        seval = "lambda pkt:_HCSITest(pkt,%s,'%s')" % (ibit, names[i])
+        seval = "lambda pkt:_HCSITest(pkt,%s,'%s')" % (ibit, name)
         test = eval(seval)
         cond_fields.append(ConditionalField(fields[i], test))
     return cond_fields

@@ -9,10 +9,13 @@ DNS: Domain Name System.
 
 import socket,struct
 
+from scapy.config import conf
 from scapy.packet import *
 from scapy.fields import *
 from scapy.ansmachine import *
-from scapy.layers.inet import IP, UDP
+from scapy.sendrecv import sr1
+from scapy.layers.inet import IP, DestIPField, UDP
+from scapy.layers.inet6 import DestIP6Field
 
 class DNSStrField(StrField):
 
@@ -52,7 +55,7 @@ class DNSStrField(StrField):
 
 
 class DNSRRCountField(ShortField):
-    holds_packets=1
+    __slots__ = ["rr"]
     def __init__(self, name, default, rr):
         ShortField.__init__(self, name, default)
         self.rr = rr
@@ -107,7 +110,8 @@ def DNSgetstr(s,p):
         
 
 class DNSRRField(StrField):
-    holds_packets=1
+    __slots__ = ["countfld", "passon"]
+    holds_packets = 1
     def __init__(self, name, countfld, passon=1):
         StrField.__init__(self, name, None)
         self.countfld = countfld
@@ -124,8 +128,8 @@ class DNSRRField(StrField):
         if type in [2, 3, 4, 5]:
             rr.rdata = DNSgetstr(s,p)[0]
             del(rr.rdlen)
-        elif type in dnsRRdispatcher.keys():
-            rr = dnsRRdispatcher[type]("\x00"+ret+s[p:p+rdlen])
+        elif type in DNSRR_DISPATCHER:
+            rr = DNSRR_DISPATCHER[type]("\x00"+ret+s[p:p+rdlen])
 	else:
           del(rr.rdlen)
         
@@ -158,7 +162,6 @@ class DNSRRField(StrField):
             
             
 class DNSQRField(DNSRRField):
-    holds_packets=1
     def decodeRR(self, name, s, p):
         ret = s[p:p+4]
         p += 4
@@ -171,26 +174,50 @@ class DNSQRField(DNSRRField):
 class RDataField(StrLenField):
     def m2i(self, pkt, s):
         family = None
-        if pkt.type == 1:
+        if pkt.type == 1: # A
             family = socket.AF_INET
-        elif pkt.type == 28:
-            family = socket.AF_INET6
-        elif pkt.type == 12:
+        elif pkt.type == 12: # PTR
             s = DNSgetstr(s, 0)[0]
+        elif pkt.type == 16: # TXT
+            ret_s = ""
+            tmp_s = s
+            # RDATA contains a list of strings, each are prepended with
+            # a byte containing the size of the following string.
+            while tmp_s:
+                tmp_len = struct.unpack("!B", tmp_s[0])[0] + 1
+                if tmp_len > len(tmp_s):
+                  warning("DNS RR TXT prematured end of character-string (size=%i, remaining bytes=%i)" % (tmp_len, len(tmp_s)))
+                ret_s += tmp_s[1:tmp_len]
+                tmp_s = tmp_s[tmp_len:]
+            s = ret_s
+        elif pkt.type == 28: # AAAA
+            family = socket.AF_INET6
         if family is not None:    
             s = inet_ntop(family, s)
         return s
     def i2m(self, pkt, s):
-        if pkt.type == 1:
+        if pkt.type == 1: # A
             if s:
                 s = inet_aton(s)
-        elif pkt.type == 28:
-            if s:
-                s = inet_pton(socket.AF_INET6, s)
-        elif pkt.type in [2,3,4,5]:
+        elif pkt.type in [2, 3, 4, 5, 12]: # NS, MD, MF, CNAME, PTR
             s = "".join(map(lambda x: chr(len(x))+x, s.split(".")))
             if ord(s[-1]):
                 s += "\x00"
+        elif pkt.type == 16: # TXT
+            if s:
+                ret_s = ""
+                # The initial string must be splitted into a list of strings
+                # prepended with theirs sizes.
+                while len(s) >= 255:
+                    ret_s += "\xff" + s[:255]
+                    s = s[255:]
+                # The remaining string is less than 255 bytes long    
+                if len(s):
+                    ret_s += struct.pack("!B", len(s)) + s
+                s = ret_s
+        elif pkt.type == 28: # AAAA
+            if s:
+                s = inet_pton(socket.AF_INET6, s)
         return s
 
 class RDLenField(Field):
@@ -215,7 +242,7 @@ class DNS(Packet):
                     BitEnumField("opcode", 0, 4, {0:"QUERY",1:"IQUERY",2:"STATUS"}),
                     BitField("aa", 0, 1),
                     BitField("tc", 0, 1),
-                    BitField("rd", 0, 1),
+                    BitField("rd", 1, 1),
                     BitField("ra", 0, 1),
                     BitField("z", 0, 1),
                     # AD and CD bits are defined in RFC 2535
@@ -250,7 +277,7 @@ class DNS(Packet):
         return 'DNS %s%s ' % (type, name)
 
 dnstypes = { 0:"ANY", 255:"ALL",
-             1:"A", 2:"NS", 3:"MD", 4:"MD", 5:"CNAME", 6:"SOA", 7: "MB", 8:"MG",
+             1:"A", 2:"NS", 3:"MD", 4:"MF", 5:"CNAME", 6:"SOA", 7: "MB", 8:"MG",
              9:"MR",10:"NULL",11:"WKS",12:"PTR",13:"HINFO",14:"MINFO",15:"MX",16:"TXT",
              17:"RP",18:"AFSDB",28:"AAAA", 33:"SRV",38:"A6",39:"DNAME",
              41:"OPT", 43:"DS", 46:"RRSIG", 47:"NSEC", 48:"DNSKEY",
@@ -264,9 +291,9 @@ dnsclasses =  {1: 'IN',  2: 'CS',  3: 'CH',  4: 'HS',  255: 'ANY'}
 class DNSQR(Packet):
     name = "DNS Question Record"
     show_indent=0
-    fields_desc = [ DNSStrField("qname",""),
-                    ShortEnumField("qtype", 1, dnsqtypes),
-                    ShortEnumField("qclass", 1, dnsclasses) ]
+    fields_desc = [DNSStrField("qname", "www.example.com"),
+                   ShortEnumField("qtype", 1, dnsqtypes),
+                   ShortEnumField("qclass", 1, dnsclasses)]
                     
                     
 
@@ -390,7 +417,7 @@ def RRlist2bitmap(lst):
     for wb in xrange(min_window_blocks, max_window_blocks+1):
         # First, filter out RR not encoded in the current window block
         # i.e. keep everything between 256*wb <= 256*(wb+1)
-        rrlist = filter(lambda x: 256*wb <= x and x < 256*(wb+1), lst)
+        rrlist = filter(lambda x: 256 * wb <= x < 256 * (wb + 1), lst)
         rrlist.sort()
         if rrlist == []:
             continue
@@ -411,7 +438,7 @@ def RRlist2bitmap(lst):
         for tmp in xrange(bytes):
             v = 0
             # Remove out of range Ressource Records
-            tmp_rrlist = filter(lambda x: 256*wb+8*tmp <= x and x < 256*wb+8*tmp+8, rrlist)
+            tmp_rrlist = filter(lambda x: 256 * wb + 8 * tmp <= x < 256 * wb + 8 * tmp + 8, rrlist)
             if not tmp_rrlist == []:
                 # 1. rescale to fit into 8 bits
                 tmp_rrlist = map(lambda x: (x-256*wb)-(tmp*8), tmp_rrlist)
@@ -567,22 +594,21 @@ class DNSRRNSEC3PARAM(_DNSRRdummy):
 		  ]
 
 
-dnssecclasses = [ DNSRROPT, DNSRRRSIG, DNSRRDLV, DNSRRDNSKEY, DNSRRNSEC, DNSRRDS, DNSRRNSEC3, DNSRRNSEC3PARAM ]
+DNSRR_DISPATCHER = {
+    41: DNSRROPT,        # RFC 1671
+    43: DNSRRDS,         # RFC 4034
+    46: DNSRRRSIG,       # RFC 4034
+    47: DNSRRNSEC,       # RFC 4034
+    48: DNSRRDNSKEY,     # RFC 4034
+    50: DNSRRNSEC3,      # RFC 5155
+    51: DNSRRNSEC3PARAM, # RFC 5155
+    32769: DNSRRDLV,     # RFC 4431
+}
+
+DNSSEC_CLASSES = tuple(DNSRR_DISPATCHER.itervalues())
 
 def isdnssecRR(obj):
-    list = [ isinstance (obj, cls) for cls in dnssecclasses ]
-    return reduce(lambda x,y: x or y, list)
-
-dnsRRdispatcher = {     #6: DNSRRSOA,
-                       41: DNSRROPT,        # RFC 1671
-                       43: DNSRRDS,         # RFC 4034
-                       46: DNSRRRSIG,       # RFC 4034
-                       47: DNSRRNSEC,       # RFC 4034
-                       48: DNSRRDNSKEY,     # RFC 4034
-                       50: DNSRRNSEC3,      # RFC 5155
-                       51: DNSRRNSEC3PARAM, # RFC 5155
-                    32769: DNSRRDLV         # RFC 4431
-                   }
+    return isinstance(obj, DNSSEC_CLASSES)
 
 class DNSRR(Packet):
     name = "DNS Resource Record"
@@ -594,8 +620,13 @@ class DNSRR(Packet):
                     RDLenField("rdlen"),
                     RDataField("rdata", "", length_from=lambda pkt:pkt.rdlen) ]
 
-bind_layers( UDP,           DNS,           dport=53)
-bind_layers( UDP,           DNS,           sport=53)
+
+bind_layers(UDP, DNS, dport=5353)
+bind_layers(UDP, DNS, sport=5353)
+bind_layers(UDP, DNS, dport=53)
+bind_layers(UDP, DNS, sport=53)
+DestIPField.bind_addr(UDP, "224.0.0.251", dport=5353)
+DestIP6Field.bind_addr(UDP, "ff02::fb", dport=5353)
 
 
 @conf.commands.register

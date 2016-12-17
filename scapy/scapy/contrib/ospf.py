@@ -24,7 +24,10 @@ GNU General Public License for more details.
 """
 
 
-from scapy.all import *
+from scapy.packet import *
+from scapy.fields import *
+from scapy.layers.inet import *
+from scapy.layers.inet6 import *
 
 EXT_VERSION = "v0.9.2"
 
@@ -32,8 +35,10 @@ EXT_VERSION = "v0.9.2"
 class OSPFOptionsField(FlagsField):
 
     def __init__(self, name="options", default=0, size=8,
-                 names=["MT", "E", "MC", "NP", "L", "DC", "O", "DN"]):
+                 names=None):
         FlagsField.__init__(self, name, default, size, names)
+        if names is None:
+            names = ["MT", "E", "MC", "NP", "L", "DC", "O", "DN"]
 
 
 _OSPF_types = {1: "Hello",
@@ -127,8 +132,10 @@ class LLS_Generic_TLV(Packet):
 class LLS_ExtendedOptionsField(FlagsField):
 
     def __init__(self, name="options", default=0, size=32,
-                 names=["LR", "RS"]):
+                 names=None):
         FlagsField.__init__(self, name, default, size, names)
+        if names is None:
+            names = ["LR", "RS"]
 
 
 class LLS_Extended_Options(LLS_Generic_TLV):
@@ -206,40 +213,7 @@ _OSPF_LSclasses = {1: "OSPF_Router_LSA",
 
 
 def ospf_lsa_checksum(lsa):
-    """ Fletcher checksum for OSPF LSAs, returned as a 2 byte string.
-
-    Give the whole LSA packet as argument.
-    For details on the algorithm, see RFC 2328 chapter 12.1.7 and RFC 905 Annex B.
-    """
-    # This is based on the GPLed C implementation in Zebra <http://www.zebra.org/>
-
-    CHKSUM_OFFSET = 16
-
-    if len(lsa) < CHKSUM_OFFSET:
-        raise Exception("LSA Packet too short (%s bytes)" % len(lsa))
-
-    c0 = c1 = 0
-    # Calculation is done with checksum set to zero
-    lsa = lsa[:CHKSUM_OFFSET] + "\x00\x00" + lsa[CHKSUM_OFFSET + 2:]
-    for char in lsa[2:]:  #  leave out age
-        c0 += ord(char)
-        c1 += c0
-
-    c0 %= 255
-    c1 %= 255
-
-    x = ((len(lsa) - CHKSUM_OFFSET - 1) * c0 - c1) % 255
-
-    if (x <= 0):
-        x += 255
-
-    y = 510 - c0 - x
-
-    if (y > 255):
-        y -= 255
-    #checksum = (x << 8) + y
-
-    return chr(x) + chr(y)
+    return fletcher16_checkbytes("\x00\x00" + lsa[2:], 16) # leave out age
 
 
 class OSPF_LSA_Hdr(Packet):
@@ -456,69 +430,6 @@ class OSPF_LSAck(Packet):
 #------------------------------------------------------------------------------
 # OSPFv3
 #------------------------------------------------------------------------------
-# TODO: Add length_from / adjust functionality to IP6Field and remove this class
-class OspfIP6Field(StrField, IP6Field):
-    """
-    Special IP6Field for prefix fields in OSPFv3 LSAs
-    """
-
-    def __init__(self, name, default, length=None, length_from=None):
-        StrField.__init__(self, name, default)
-        self.length_from = length_from
-        if length is not None:
-            self.length_from = lambda pkt, length = length: length
-
-    def any2i(self, pkt, x):
-        return IP6Field.any2i(self, pkt, x)
-
-    def i2repr(self, pkt, x):
-        return IP6Field.i2repr(self, pkt, x)
-
-    def h2i(self, pkt, x):
-        return IP6Field.h2i(self, pkt, x)
-
-    def i2m(self, pkt, x):
-        x = inet_pton(socket.AF_INET6, x)
-        l = self.length_from(pkt)
-        l = self.prefixlen_to_bytelen(l)
-
-        return x[:l]
-
-    def m2i(self, pkt, x):
-        l = self.length_from(pkt)
-
-        prefixlen = self.prefixlen_to_bytelen(l)
-        if l > 128:
-            warning("OspfIP6Field: Prefix length is > 128. Dissection of this packet will fail")
-        else:
-            pad = "\x00" * (16 - prefixlen)
-            x += pad
-
-        return inet_ntop(socket.AF_INET6, x)
-
-    def prefixlen_to_bytelen(self, l):
-        if l <= 32:
-            return 4
-        elif l <= 64:
-            return 8
-        elif l <= 96:
-            return 12
-        else:
-            return 16
-
-    def i2len(self, pkt, x):
-        l = self.length_from(pkt)
-        l = self.prefixlen_to_bytelen(l)
-
-        return l
-
-    def getfield(self, pkt, s):
-        l = self.length_from(pkt)
-        l = self.prefixlen_to_bytelen(l)
-
-        return s[l:], self.m2i(pkt, s[:l])
-
-
 class OSPFv3_Hdr(Packet):
     name = "OSPFv3 Header"
     fields_desc = [ByteField("version", 3),
@@ -548,8 +459,10 @@ class OSPFv3_Hdr(Packet):
 class OSPFv3OptionsField(FlagsField):
 
     def __init__(self, name="options", default=0, size=24,
-                 names=["V6", "E", "MC", "N", "R", "DC", "AF", "L", "I", "F"]):
+                 names=None):
         FlagsField.__init__(self, name, default, size, names)
+        if names is None:
+            names = ["V6", "E", "MC", "N", "R", "DC", "AF", "L", "I", "F"]
 
 
 class OSPFv3_Hello(Packet):
@@ -663,8 +576,10 @@ class OSPFv3_Network_LSA(OSPF_BaseLSA):
 class OSPFv3PrefixOptionsField(FlagsField):
 
     def __init__(self, name="prefixoptions", default=0, size=8,
-                 names=["NU", "LA", "MC", "P"]):
+                 names=None):
         FlagsField.__init__(self, name, default, size, names)
+        if names is None:
+            names = ["NU", "LA", "MC", "P"]
 
 
 class OSPFv3_Inter_Area_Prefix_LSA(OSPF_BaseLSA):
@@ -678,10 +593,10 @@ class OSPFv3_Inter_Area_Prefix_LSA(OSPF_BaseLSA):
                    ShortField("len", None),
                    ByteField("reserved", 0),
                    X3BytesField("metric", 10),
-                   ByteField("prefixlen", 64),
+                   FieldLenField("prefixlen", None, length_of="prefix", fmt="B"),
                    OSPFv3PrefixOptionsField(),
                    ShortField("reserved2", 0),
-                   OspfIP6Field("prefix", "2001:db8:0:42::", length_from=lambda pkt: pkt.prefixlen)]
+                   IP6PrefixField("prefix", "2001:db8:0:42::/64", wordbytes=4, length_from=lambda pkt: pkt.prefixlen)]
 
 
 class OSPFv3_Inter_Area_Router_LSA(OSPF_BaseLSA):
@@ -694,6 +609,8 @@ class OSPFv3_Inter_Area_Router_LSA(OSPF_BaseLSA):
                    XShortField("chksum", None),
                    ShortField("len", None),
                    ByteField("reserved", 0),
+                   OSPFv3OptionsField(),
+                   ByteField("reserved2", 0),
                    X3BytesField("metric", 1),
                    IPField("router", "2.2.2.2")]
 
@@ -709,10 +626,10 @@ class OSPFv3_AS_External_LSA(OSPF_BaseLSA):
                    ShortField("len", None),
                    FlagsField("flags", 0, 8, ["T", "F", "E"]),
                    X3BytesField("metric", 20),
-                   ByteField("prefixlen", 64),
+                   FieldLenField("prefixlen", None, length_of="prefix", fmt="B"),
                    OSPFv3PrefixOptionsField(),
                    ShortEnumField("reflstype", 0, _OSPFv3_LStypes),
-                   OspfIP6Field("prefix", "2001:db8:0:42::", length_from=lambda pkt: pkt.prefixlen),
+                   IP6PrefixField("prefix", "2001:db8:0:42::/64", wordbytes=4, length_from=lambda pkt: pkt.prefixlen),
                    ConditionalField(IP6Field("fwaddr", "::"), lambda pkt: pkt.flags & 0x02 == 0x02),
                    ConditionalField(IntField("tag", 0), lambda pkt: pkt.flags & 0x01 == 0x01),
                    ConditionalField(IPField("reflsid", 0), lambda pkt: pkt.reflstype != 0)]
@@ -725,10 +642,10 @@ class OSPFv3_Type_7_LSA(OSPFv3_AS_External_LSA):
 
 class OSPFv3_Prefix_Item(Packet):
     name = "OSPFv3 Link Prefix Item"
-    fields_desc = [ByteField("prefixlen", 64),
+    fields_desc = [FieldLenField("prefixlen", None, length_of="prefix", fmt="B"),
                    OSPFv3PrefixOptionsField(),
                    ShortField("metric", 10),
-                   OspfIP6Field("prefix", "2001:db8:0:42::", length_from=lambda pkt: pkt.prefixlen)]
+                   IP6PrefixField("prefix", "2001:db8:0:42::/64", wordbytes=4, length_from=lambda pkt: pkt.prefixlen)]
 
     def extract_padding(self, s):
         return "", s
@@ -746,7 +663,7 @@ class OSPFv3_Link_LSA(OSPF_BaseLSA):
                    ByteField("prio", 1),
                    OSPFv3OptionsField(),
                    IP6Field("lladdr", "fe80::"),
-                   IntField("prefixes", 0),
+                   FieldLenField("prefixes", None, count_of="prefixlist", fmt="I"),
                    PacketListField("prefixlist", None, OSPFv3_Prefix_Item,
                                   count_from = lambda pkt: pkt.prefixes)]
 
@@ -760,7 +677,7 @@ class OSPFv3_Intra_Area_Prefix_LSA(OSPF_BaseLSA):
                    XIntField("seq", 0x80000001),
                    XShortField("chksum", None),
                    ShortField("len", None),
-                   ShortField("prefixes", 0),
+                   FieldLenField("prefixes", None, count_of="prefixlist", fmt="H"),
                    ShortEnumField("reflstype", 0, _OSPFv3_LStypes),
                    IPField("reflsid", "0.0.0.0"),
                    IPField("refadrouter", "0.0.0.0"),
@@ -820,6 +737,7 @@ bind_layers(OSPF_Hdr, OSPF_DBDesc, type=2)
 bind_layers(OSPF_Hdr, OSPF_LSReq, type=3)
 bind_layers(OSPF_Hdr, OSPF_LSUpd, type=4)
 bind_layers(OSPF_Hdr, OSPF_LSAck, type=5)
+DestIPField.bind_addr(OSPF_Hdr, "224.0.0.5")
 
 bind_layers(IPv6, OSPFv3_Hdr, nh=89)
 bind_layers(OSPFv3_Hdr, OSPFv3_Hello, type=1)
@@ -827,7 +745,9 @@ bind_layers(OSPFv3_Hdr, OSPFv3_DBDesc, type=2)
 bind_layers(OSPFv3_Hdr, OSPFv3_LSReq, type=3)
 bind_layers(OSPFv3_Hdr, OSPFv3_LSUpd, type=4)
 bind_layers(OSPFv3_Hdr, OSPFv3_LSAck, type=5)
+DestIP6Field.bind_addr(OSPFv3_Hdr, "ff02::5")
 
 
 if __name__ == "__main__":
+    from scapy.main import interact
     interact(mydict=globals(), mybanner="OSPF extension %s" % EXT_VERSION)

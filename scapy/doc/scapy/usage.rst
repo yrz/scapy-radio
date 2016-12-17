@@ -79,7 +79,7 @@ The ``/`` operator has been used as a composition operator between two layers. W
     <IP frag=0 proto=55 |<TCP |>>
 
 
-.. image:: graphics/fieldsmanagement.*
+.. image:: graphics/fieldsmanagement.png
    :scale: 90
 
 Each packet can be build or dissected (note: in Python ``_`` (underscore) is the latest result)::
@@ -152,7 +152,7 @@ str(pkt)                  assemble the packet
 hexdump(pkt)              have an hexadecimal dump 
 ls(pkt)                   have the list of fields values 
 pkt.summary()             for a one-line summary 
-pkt.show()                for a developped view of the packet 
+pkt.show()                for a developed view of the packet 
 pkt.show2()               same as show but on the assembled packet (checksum is calculated, for instance) 
 pkt.sprintf()             fills a format string with fields values of the packet 
 pkt.decode_payload_as()   changes the way the payload is decoded 
@@ -166,7 +166,7 @@ pkt.command()             return a Scapy command that can generate the packet
 Generating sets of packets
 --------------------------
 
-For the moment, we have only generated one packet. Let see how to specify sets of packets as easily. Each field of the whole packet (ever layers) can be a set. This implicidely define a set of packets, generated using a kind of cartesian product between all the fields.
+For the moment, we have only generated one packet. Let see how to specify sets of packets as easily. Each field of the whole packet (ever layers) can be a set. This implicitly define a set of packets, generated using a kind of cartesian product between all the fields.
 
 ::
 
@@ -201,7 +201,7 @@ Command          Effect
 summary()        displays a list of summaries of each packet 
 nsummary()       same as previous, with the packet number 
 conversations()  displays a graph of conversations 
-show()           displays the prefered representation (usually nsummary()) 
+show()           displays the preferred representation (usually nsummary()) 
 filter()         returns a packet list filtered with a lambda function 
 hexdump()        returns a hexdump of all packets 
 hexraw()         returns a hexdump of the Raw layer of all packets 
@@ -219,7 +219,7 @@ Sending packets
 .. index::
    single: Sending packets, send
    
-Now that we know how to manipulate packets. Let's see how to send them. The send() function will send packets at layer 3. That is to say it will handle routing and layer 2 for you. The sendp() function will work at layer 2. It's up to you to choose the right interface and the right link layer protocol.
+Now that we know how to manipulate packets. Let's see how to send them. The send() function will send packets at layer 3. That is to say it will handle routing and layer 2 for you. The sendp() function will work at layer 2. It's up to you to choose the right interface and the right link layer protocol. send() and sendp() will also return sent packet list if return_packets=True is passed as parameter.
 
 ::
 
@@ -235,6 +235,12 @@ Now that we know how to manipulate packets. Let's see how to send them. The send
     >>> sendp(rdpcap("/tmp/pcapfile")) # tcpreplay
     ...........
     Sent 11 packets.
+    
+    Returns packets sent by send()
+    >>> send(IP(dst='127.0.0.1'), return_packets=True)
+    .
+    Sent 1 packets.
+    <PacketList: TCP:0 UDP:0 ICMP:0 Other:1>
 
 
 Fuzzing
@@ -243,7 +249,7 @@ Fuzzing
 .. index::
    single: fuzz(), fuzzing
 
-The function fuzz() is able to change any default value that is not to be calculated (like checksums) by an object whose value is random and whose type is adapted to the field. This enables to quicky built fuzzing templates and send them in loop. In the following example, the IP layer is normal, and the UDP and NTP layers are fuzzed. The UDP checksum will be correct, the UDP destination port will be overloaded by NTP to be 123 and the NTP version will be forced to be 4. All the other ports will be randomized::
+The function fuzz() is able to change any default value that is not to be calculated (like checksums) by an object whose value is random and whose type is adapted to the field. This enables to quickly built fuzzing templates and send them in loop. In the following example, the IP layer is normal, and the UDP and NTP layers are fuzzed. The UDP checksum will be correct, the UDP destination port will be overloaded by NTP to be 123 and the NTP version will be forced to be 4. All the other ports will be randomized::
 
     >>> send(IP(dst="target")/fuzz(UDP()/NTP(version=4)),loop=1)
     ................^C
@@ -349,7 +355,7 @@ Classic SYN Scan can be initialized by executing the following command from Scap
 
     >>> sr1(IP(dst="72.14.207.99")/TCP(dport=80,flags="S"))
 
-The above will send a single SYN packet to Google's port 80 and will quit after receving a single response::
+The above will send a single SYN packet to Google's port 80 and will quit after receiving a single response::
 
     Begin emission:
     .Finished to send 1 packets.
@@ -514,7 +520,7 @@ Sniffing
 .. index::
    single: sniff()
 
-We can easily capture some packets or even clone tcpdump or tethereal. If no interface is given, sniffing will happen on every interfaces::
+We can easily capture some packets or even clone tcpdump or tshark. Either one interface or a list of interfaces to sniff on can be provided. If no interface is given, sniffing will happen on every interface::
 
     >>>  sniff(filter="icmp and host 66.35.250.151", count=2)
     <Sniffed: UDP:0 TCP:0 ICMP:2 Other:0>
@@ -601,6 +607,11 @@ We can easily capture some packets or even clone tcpdump or tethereal. If no int
              load      = 'B\xf7i\xa9\x00\x04\x149\x08\t\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !\x22#$%&\'()*+,-./01234567'
     ---[ Padding ]---
                 load      = '\n_\x00\x0b'
+    >>> sniff(iface=["eth1","eth2"], prn=lambda x: x.sniffed_on+": "+x.summary())
+    eth3: Ether / IP / ICMP 192.168.5.21 > 66.35.250.151 echo-request 0 / Raw  
+    eth3: Ether / IP / ICMP 66.35.250.151 > 192.168.5.21 echo-reply 0 / Raw    
+    eth2: Ether / IP / ICMP 192.168.5.22 > 66.35.250.152 echo-request 0 / Raw  
+    eth2: Ether / IP / ICMP 66.35.250.152 > 192.168.5.22 echo-reply 0 / Raw
 
 For even more control over displayed information we can use the ``sprintf()`` function::
 
@@ -638,7 +649,7 @@ We can sniff and do passive OS fingerprinting::
     (0.875, ['Linux 2.4.2 - 2.4.14 (1)', 'Linux 2.4.10 (1)', 'Windows 98 (?)'])
     (1.0, ['Windows 2000 (9)'])
 
-The number before the OS guess is the accurracy of the guess.
+The number before the OS guess is the accuracy of the guess.
 
 Filters
 -------
@@ -677,7 +688,7 @@ Send and receive in a loop
 .. index::
    single: srloop()
 
-Here is an example of a (h)ping-like functionnality : you always send the same set of packets to see if something change::
+Here is an example of a (h)ping-like functionality : you always send the same set of packets to see if something change::
 
     >>> srloop(IP(dst="www.target.com/30")/TCP())
     RECV 1: Ether / IP / TCP 192.168.11.99:80 > 192.168.8.14:20 SA / Padding
@@ -878,7 +889,7 @@ Routing
 .. index::
    single: Routing, conf.route
 
-Now scapy has its own routing table, so that you can have your packets routed diffrently than the system::
+Now scapy has its own routing table, so that you can have your packets routed differently than the system::
 
     >>> conf.route
     Network         Netmask         Gateway         Iface
@@ -1089,7 +1100,7 @@ Similarly, filtered ports can be found with unanswered packets::
 Xmas Scan
 ---------
 
-Xmas Scan can be launced using the following command::
+Xmas Scan can be launched using the following command::
 
     >>> ans,unans = sr(IP(dst="192.168.1.1")/TCP(dport=666,flags="FPU") )
 
@@ -1356,7 +1367,7 @@ Identifying rogue DHCP servers on your LAN
 Problem
 ^^^^^^^
 
-You suspect that someone has installed an additional, unauthorized DHCP server on your LAN -- either unintentiously or maliciously. 
+You suspect that someone has installed an additional, unauthorized DHCP server on your LAN -- either unintentionally or maliciously. 
 Thus you want to check for any active DHCP servers and identify their IP and MAC addresses.  
 
 Solution

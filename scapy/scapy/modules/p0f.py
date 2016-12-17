@@ -7,10 +7,19 @@
 Clone of p0f passive OS fingerprinting
 """
 
+import time
+import struct
+import os
+import socket
+import random
+
 from scapy.data import KnowledgeBase
 from scapy.config import conf
 from scapy.layers.inet import IP, TCP, TCPOptions
-from scapy.packet import NoPayload
+from scapy.packet import NoPayload, Packet
+from scapy.error import warning, Scapy_Exception, log_runtime
+from scapy.volatile import RandInt, RandByte, RandChoice, RandNum, RandShort, RandString
+from scapy.sendrecv import sniff
 
 conf.p0f_base ="/etc/p0f/p0f.fp"
 conf.p0fa_base ="/etc/p0f/p0fa.fp"
@@ -244,7 +253,7 @@ def p0f_correl(x,y):
     yopt = y[4].split(",")
     if len(xopt) == len(yopt):
         same = True
-        for i in range(len(xopt)):
+        for i in xrange(len(xopt)):
             if not (xopt[i] == yopt[i] or
                     (len(yopt[i]) == 2 and len(xopt[i]) > 1 and
                      yopt[i][1] == "*" and xopt[i][0] == yopt[i][0]) or

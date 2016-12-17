@@ -22,8 +22,9 @@
 ##                                                                         ##
 #############################################################################
 
-from scapy.all import *
-import __builtin__
+from scapy.packet import *
+from scapy.fields import *
+from scapy.layers.inet import TCP
 
 #####################################################################
 # Helpers and constants
@@ -355,7 +356,7 @@ _skinny_message_callinfo_restrictions = ['CallerName'
                                          , 'OriginalCalledName'
                                          , 'OriginalCalledNumber'
                                          , 'LastRedirectName'
-                                         , 'LastRedirectNumber'] + ['Bit%d' % i for i in range(8,15)]
+                                         , 'LastRedirectNumber'] + ['Bit%d' % i for i in xrange(8,15)]
 class SkinnyMessageCallInfo(Packet):
     name='call information'
     fields_desc = [ StrFixedLenField("callername", "Jean Valjean", 40),
@@ -474,7 +475,7 @@ class Skinny(Packet):
     name="Skinny"
     fields_desc = [ LEIntField("len", None),
                     LEIntField("res",0),
-                    LEIntEnumField("msg",0, skinny_messages) ]
+                    LEIntEnumField("msg",0, skinny_messages_cls) ]
 
     def post_build(self, pkt, p):
         if self.len is None:
@@ -495,5 +496,6 @@ bind_layers(TCP, Skinny, { "dport": 2000 } )
 bind_layers(TCP, Skinny, { "sport": 2000 } )
 
 if __name__ == "__main__":
+    from scapy.main import interact
     interact(mydict=globals(),mybanner="Welcome to Skinny add-on")
 

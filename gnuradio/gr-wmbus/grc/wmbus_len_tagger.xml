@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<block>
+  <name>WMBus Len Tagger</name>
+  <key>wmbus_len_tagger</key>
+  <category>[Scapy Radio]/WM-Bus</category>
+  <import>import wmbus</import>
+  <make>wmbus.len_tagger()</make>
+    <sink>
+        <name>in</name>
+        <type>complex</type>
+    </sink>
+    <source>
+        <name>out</name>
+        <type>complex</type>
+    </source>
+</block>

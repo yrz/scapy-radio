@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<block>
+  <name>Sigfox DetectionPeak</name>
+  <key>sigfox_Detection_Peak</key>
+  <category>[Scapy Radio]/Sigfox</category>
+  <import>import sigfox</import>
+  <make>sigfox.Detection_Peak($Threshold, $Scale)</make>
+  <param>
+    <name>threshold</name>
+    <key>Threshold</key>
+    <type>int</type>
+  </param>
+  <param>
+    <name>scale</name>
+    <key>Scale</key>
+    <type>float</type>
+  </param>
+  <sink>
+    <name>in</name>
+    <type>float</type>
+  </sink>
+  <source>
+    <name>out0</name>
+    <type>message</type>
+    <optional>1</optional>
+  </source>
+  <source>
+    <name>out1</name>
+    <type>message</type>
+    <optional>1</optional>
+  </source>
+  <source>
+    <name>out2</name>
+    <type>message</type>
+    <optional>1</optional>
+  </source>
+
+</block>

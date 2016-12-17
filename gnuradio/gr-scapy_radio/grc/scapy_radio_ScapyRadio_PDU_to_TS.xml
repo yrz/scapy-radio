@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<block>
+  <name>ScapyRadio PDU to TS</name>
+  <key>scapy_radio_ScapyRadio_PDU_to_TS</key>
+  <category>[Scapy Radio]/Core</category>
+  <import>import scapy_radio</import>
+  <make>scapy_radio.ScapyRadio_PDU_to_TS($tag, $usleep, $debug)</make>
+  
+  <param>
+    <name>Length tag name</name>
+    <key>tag</key>
+    <value>packet_len</value>
+    <type>string</type>
+  </param> 
+
+  <param>
+    <name>Sleep (µs)</name>
+    <key>usleep</key>
+    <value>10</value>
+    <type>int</type>
+  </param>
+
+  <param>
+    <name>Debug</name>
+    <key>debug</key>
+    <value>False</value>
+    <type>bool</type>
+    <option>
+      <name>On</name>
+      <key>True</key>
+    </option>
+    <option>
+      <name>Off</name>
+      <key>False</key>
+    </option>
+  </param>
+
+
+  <sink>
+    <name>in</name>
+    <type>message</type>
+  </sink>
+
+  <source>
+    <name>out</name>
+    <type>complex</type>
+  </source>
+</block>

@@ -18,8 +18,9 @@
 # Boston, MA 02110-1301, USA.
 
 install(FILES
-    scapy_radio_add_gr_header.xml
-    scapy_radio_strip_gr_header.xml
+    #scapy_radio_add_gr_header.xml
+    #scapy_radio_strip_gr_header.xml
     scapy_radio_uhd_tags.xml
-    scapy_radio_Tagged_stream_2_PDU_2.xml DESTINATION share/gnuradio/grc/blocks
+    scapy_radio_Tagged_stream_2_PDU_2.xml
+    scapy_radio_ScapyRadio_PDU_to_TS.xml DESTINATION share/gnuradio/grc/blocks
 )

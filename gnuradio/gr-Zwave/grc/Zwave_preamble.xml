@@ -1,7 +1,7 @@
 <block>
-  <name>Preamble</name>
+  <name>Zwave Preamble</name>
   <key>Zwave_preamble</key>
-  <category>ZWAVE</category>
+  <category>[Scapy Radio]/Zwave</category>
   <import>import Zwave</import>
   <make>Zwave.preamble()</make>
   <sink>

@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<block>
+  <name>ScapyRadio UHD Tag</name>
+  <key>wmbus_add_uhd_tag</key>
+  <category>[Scapy Radio]/WM-Bus</category>
+  <import>import wmbus</import>
+  <make>wmbus.add_uhd_tag()</make>
+
+    <sink>
+        <name>in</name>
+        <type>byte</type>
+    </sink>
+    <source>
+        <name>out</name>
+        <type>byte</type>
+    </source>
+
+</block>

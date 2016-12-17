@@ -1,7 +1,7 @@
 <block>
-  <name>Packet sink</name>
+  <name>BT4LE PacketSink</name>
   <key>bt4le_packet_sink</key>
-  <category>BT4LE</category>
+  <category>[Scapy Radio]/BT4LE</category>
   <import>import bt4le</import>
   <make>bt4le.packet_sink($i_chan_nbr)</make>
   <param>

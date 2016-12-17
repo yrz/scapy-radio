@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<block>
+  <name>Sigfox PacketSink</name>
+  <key>sigfox_packet_sink_scapy</key>
+  <category>[Scapy Radio]/Sigfox</category>
+  <import>import sigfox</import>
+  <make>sigfox.packet_sink_scapy()</make>
+  <sink>
+    <name>in</name>
+    <type>byte</type>
+  </sink>
+  <source>
+    <name>out</name>
+    <type>message</type>
+  </source>
+</block>

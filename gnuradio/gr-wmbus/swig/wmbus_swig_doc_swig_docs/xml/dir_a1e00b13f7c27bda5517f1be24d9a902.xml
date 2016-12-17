@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.8">
+  <compounddef id="dir_a1e00b13f7c27bda5517f1be24d9a902" kind="dir">
+    <compoundname>/home/pentest/Downloads/scapy-radio/gnuradio/gr-wmbus/include/wmbus</compoundname>
+    <innerfile refid="api_8h">api.h</innerfile>
+    <innerfile refid="preamble_8h">preamble.h</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/pentest/Downloads/scapy-radio/gnuradio/gr-wmbus/include/wmbus/"/>
+  </compounddef>
+</doxygen>

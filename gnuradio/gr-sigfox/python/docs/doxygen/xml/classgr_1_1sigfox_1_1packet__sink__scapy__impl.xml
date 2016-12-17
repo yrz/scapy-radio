@@ -1,0 +1,333 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.8">
+  <compounddef id="classgr_1_1sigfox_1_1packet__sink__scapy__impl" kind="class" prot="public">
+    <compoundname>gr::sigfox::packet_sink_scapy_impl</compoundname>
+    <basecompoundref refid="classgr_1_1sigfox_1_1packet__sink__scapy" prot="public" virt="non-virtual">gr::sigfox::packet_sink_scapy</basecompoundref>
+    <includes refid="packet__sink__scapy__impl_8h" local="no">packet_sink_scapy_impl.h</includes>
+      <sectiondef kind="private-type">
+      <memberdef kind="enum" id="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a3fd38631cd5bfc6ac49a54d9d605f6c3" prot="private" static="no">
+        <name>@0</name>
+        <enumvalue id="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a3fd38631cd5bfc6ac49a54d9d605f6c3a86fc2527e99d382cd4ef28507bd274a0" prot="private">
+          <name>PREAMBLE_SEARCH</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a3fd38631cd5bfc6ac49a54d9d605f6c3a99131be20f62c0a38085995ebb16abd0" prot="private">
+          <name>DATA</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a3fd38631cd5bfc6ac49a54d9d605f6c3a1065ce3e51f801277017647ab02c3e53" prot="private">
+          <name>SIZE</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a3fd38631cd5bfc6ac49a54d9d605f6c3a074be897f9f27f566ec71509fb79dfd1" prot="private">
+          <name>CRC_HMAC</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/lib/packet_sink_scapy_impl.h" line="33" column="1" bodyfile="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/lib/packet_sink_scapy_impl.h" bodystart="33" bodyend="33"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a2ecbd98cedf28ac69c4e9bb632318cc7" prot="private" static="no" mutable="no">
+        <type>enum gr::sigfox::packet_sink_scapy_impl::@0</type>
+        <definition>enum gr::sigfox::packet_sink_scapy_impl::@0  gr::sigfox::packet_sink_scapy_impl::state</definition>
+        <argsstring></argsstring>
+        <name>state</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/lib/packet_sink_scapy_impl.h" line="33" column="1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1aaa80485cd8def4cb5c4677528056920f" prot="private" static="no" mutable="no">
+        <type>unsigned short</type>
+        <definition>unsigned short gr::sigfox::packet_sink_scapy_impl::frame_shift_reg</definition>
+        <argsstring></argsstring>
+        <name>frame_shift_reg</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/lib/packet_sink_scapy_impl.h" line="34" column="1" bodyfile="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/lib/packet_sink_scapy_impl.h" bodystart="34" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1ad211fe71025ae0ba076980bdb21bbb16" prot="private" static="no" mutable="no">
+        <type>unsigned char</type>
+        <definition>unsigned char gr::sigfox::packet_sink_scapy_impl::buf[33]</definition>
+        <argsstring>[33]</argsstring>
+        <name>buf</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/lib/packet_sink_scapy_impl.h" line="35" column="1" bodyfile="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/lib/packet_sink_scapy_impl.h" bodystart="35" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1aff8bd99921f43173eaef1d11b171c3cf" prot="private" static="no" mutable="no">
+        <type>unsigned char</type>
+        <definition>unsigned char gr::sigfox::packet_sink_scapy_impl::var</definition>
+        <argsstring></argsstring>
+        <name>var</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/lib/packet_sink_scapy_impl.h" line="36" column="1" bodyfile="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/lib/packet_sink_scapy_impl.h" bodystart="36" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1adb6045ea8b687b0657db346e6cd4bae8" prot="private" static="no" mutable="no">
+        <type>unsigned int</type>
+        <definition>unsigned int gr::sigfox::packet_sink_scapy_impl::paquet</definition>
+        <argsstring></argsstring>
+        <name>paquet</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/lib/packet_sink_scapy_impl.h" line="37" column="1" bodyfile="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/lib/packet_sink_scapy_impl.h" bodystart="37" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1adae289ac6559d5ece870658c181f98c5" prot="private" static="no" mutable="no">
+        <type>unsigned char</type>
+        <definition>unsigned char gr::sigfox::packet_sink_scapy_impl::frame</definition>
+        <argsstring></argsstring>
+        <name>frame</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/lib/packet_sink_scapy_impl.h" line="38" column="1" bodyfile="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/lib/packet_sink_scapy_impl.h" bodystart="38" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1ac1bf324b2bc60cb2aafbc169443f62d9" prot="private" static="no" mutable="no">
+        <type>unsigned char</type>
+        <definition>unsigned char gr::sigfox::packet_sink_scapy_impl::taille</definition>
+        <argsstring></argsstring>
+        <name>taille</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/lib/packet_sink_scapy_impl.h" line="39" column="1" bodyfile="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/lib/packet_sink_scapy_impl.h" bodystart="39" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a3b7751bfbe575bc5070f568495bdaafa" prot="private" static="no" mutable="no">
+        <type>unsigned int</type>
+        <definition>unsigned int gr::sigfox::packet_sink_scapy_impl::cpt</definition>
+        <argsstring></argsstring>
+        <name>cpt</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/lib/packet_sink_scapy_impl.h" line="40" column="1" bodyfile="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/lib/packet_sink_scapy_impl.h" bodystart="40" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a7f692359a673c84825b97fd05fb3fa6e" prot="private" static="no" mutable="no">
+        <type>unsigned int</type>
+        <definition>unsigned int gr::sigfox::packet_sink_scapy_impl::i</definition>
+        <argsstring></argsstring>
+        <name>i</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/lib/packet_sink_scapy_impl.h" line="41" column="1" bodyfile="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/lib/packet_sink_scapy_impl.h" bodystart="41" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a8f5d6ce1933a359e22d7880ca013c989" prot="private" static="no" mutable="no">
+        <type>unsigned int</type>
+        <definition>unsigned int gr::sigfox::packet_sink_scapy_impl::nbre_paquet</definition>
+        <argsstring></argsstring>
+        <name>nbre_paquet</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/lib/packet_sink_scapy_impl.h" line="42" column="1" bodyfile="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/lib/packet_sink_scapy_impl.h" bodystart="42" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a196f33b7751964bf1e1cd09b5a5108ad" prot="private" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool gr::sigfox::packet_sink_scapy_impl::sous_taille</definition>
+        <argsstring></argsstring>
+        <name>sous_taille</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/lib/packet_sink_scapy_impl.h" line="43" column="1" bodyfile="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/lib/packet_sink_scapy_impl.h" bodystart="43" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a1f0bae6574a9eb715ce96b664b4be58d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>gr::sigfox::packet_sink_scapy_impl::packet_sink_scapy_impl</definition>
+        <argsstring>()</argsstring>
+        <name>packet_sink_scapy_impl</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/lib/packet_sink_scapy_impl.h" line="45" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a3c7132df7fa0cb2918cb607893074762" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>gr::sigfox::packet_sink_scapy_impl::~packet_sink_scapy_impl</definition>
+        <argsstring>()</argsstring>
+        <name>~packet_sink_scapy_impl</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/lib/packet_sink_scapy_impl.h" line="46" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a211e4c8c339a3feb86be1a44e4daec76" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void gr::sigfox::packet_sink_scapy_impl::forecast</definition>
+        <argsstring>(int noutput_items, gr_vector_int &amp;ninput_items_required)</argsstring>
+        <name>forecast</name>
+        <param>
+          <type>int</type>
+          <declname>noutput_items</declname>
+        </param>
+        <param>
+          <type>gr_vector_int &amp;</type>
+          <declname>ninput_items_required</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/lib/packet_sink_scapy_impl.h" line="48" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a30e7547ac47cd3b7806cc1ae7929aba9" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int gr::sigfox::packet_sink_scapy_impl::general_work</definition>
+        <argsstring>(int noutput_items, gr_vector_int &amp;ninput_items, gr_vector_const_void_star &amp;input_items, gr_vector_void_star &amp;output_items)</argsstring>
+        <name>general_work</name>
+        <param>
+          <type>int</type>
+          <declname>noutput_items</declname>
+        </param>
+        <param>
+          <type>gr_vector_int &amp;</type>
+          <declname>ninput_items</declname>
+        </param>
+        <param>
+          <type>gr_vector_const_void_star &amp;</type>
+          <declname>input_items</declname>
+        </param>
+        <param>
+          <type>gr_vector_void_star &amp;</type>
+          <declname>output_items</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/lib/packet_sink_scapy_impl.h" line="49" column="1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="19">
+        <label>block</label>
+      </node>
+      <node id="17">
+        <label>gr::sigfox::packet_sink_scapy_impl</label>
+        <link refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl"/>
+        <childnode refid="18" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="18">
+        <label>gr::sigfox::packet_sink_scapy</label>
+        <link refid="classgr_1_1sigfox_1_1packet__sink__scapy"/>
+        <childnode refid="19" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="22">
+        <label>block</label>
+      </node>
+      <node id="20">
+        <label>gr::sigfox::packet_sink_scapy_impl</label>
+        <link refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl"/>
+        <childnode refid="21" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="21">
+        <label>gr::sigfox::packet_sink_scapy</label>
+        <link refid="classgr_1_1sigfox_1_1packet__sink__scapy"/>
+        <childnode refid="22" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/lib/packet_sink_scapy_impl.h" line="30" column="1" bodyfile="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/lib/packet_sink_scapy_impl.h" bodystart="29" bodyend="53"/>
+    <listofallmembers>
+      <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1ad211fe71025ae0ba076980bdb21bbb16" prot="private" virt="non-virtual"><scope>gr::sigfox::packet_sink_scapy_impl</scope><name>buf</name></member>
+      <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a3b7751bfbe575bc5070f568495bdaafa" prot="private" virt="non-virtual"><scope>gr::sigfox::packet_sink_scapy_impl</scope><name>cpt</name></member>
+      <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a3fd38631cd5bfc6ac49a54d9d605f6c3a074be897f9f27f566ec71509fb79dfd1" prot="private" virt="non-virtual"><scope>gr::sigfox::packet_sink_scapy_impl</scope><name>CRC_HMAC</name></member>
+      <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a3fd38631cd5bfc6ac49a54d9d605f6c3a99131be20f62c0a38085995ebb16abd0" prot="private" virt="non-virtual"><scope>gr::sigfox::packet_sink_scapy_impl</scope><name>DATA</name></member>
+      <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a211e4c8c339a3feb86be1a44e4daec76" prot="public" virt="non-virtual"><scope>gr::sigfox::packet_sink_scapy_impl</scope><name>forecast</name></member>
+      <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1adae289ac6559d5ece870658c181f98c5" prot="private" virt="non-virtual"><scope>gr::sigfox::packet_sink_scapy_impl</scope><name>frame</name></member>
+      <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1aaa80485cd8def4cb5c4677528056920f" prot="private" virt="non-virtual"><scope>gr::sigfox::packet_sink_scapy_impl</scope><name>frame_shift_reg</name></member>
+      <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a30e7547ac47cd3b7806cc1ae7929aba9" prot="public" virt="non-virtual"><scope>gr::sigfox::packet_sink_scapy_impl</scope><name>general_work</name></member>
+      <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a7f692359a673c84825b97fd05fb3fa6e" prot="private" virt="non-virtual"><scope>gr::sigfox::packet_sink_scapy_impl</scope><name>i</name></member>
+      <member refid="classgr_1_1sigfox_1_1packet__sink__scapy_1ac0aec60958919dea3f395057c50c653b" prot="public" virt="non-virtual"><scope>gr::sigfox::packet_sink_scapy_impl</scope><name>make</name></member>
+      <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a8f5d6ce1933a359e22d7880ca013c989" prot="private" virt="non-virtual"><scope>gr::sigfox::packet_sink_scapy_impl</scope><name>nbre_paquet</name></member>
+      <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a1f0bae6574a9eb715ce96b664b4be58d" prot="public" virt="non-virtual"><scope>gr::sigfox::packet_sink_scapy_impl</scope><name>packet_sink_scapy_impl</name></member>
+      <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1adb6045ea8b687b0657db346e6cd4bae8" prot="private" virt="non-virtual"><scope>gr::sigfox::packet_sink_scapy_impl</scope><name>paquet</name></member>
+      <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a3fd38631cd5bfc6ac49a54d9d605f6c3a86fc2527e99d382cd4ef28507bd274a0" prot="private" virt="non-virtual"><scope>gr::sigfox::packet_sink_scapy_impl</scope><name>PREAMBLE_SEARCH</name></member>
+      <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a3fd38631cd5bfc6ac49a54d9d605f6c3a1065ce3e51f801277017647ab02c3e53" prot="private" virt="non-virtual"><scope>gr::sigfox::packet_sink_scapy_impl</scope><name>SIZE</name></member>
+      <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a196f33b7751964bf1e1cd09b5a5108ad" prot="private" virt="non-virtual"><scope>gr::sigfox::packet_sink_scapy_impl</scope><name>sous_taille</name></member>
+      <member refid="classgr_1_1sigfox_1_1packet__sink__scapy_1a7ef0b6df66ef5529105eea4c48798e97" prot="public" virt="non-virtual"><scope>gr::sigfox::packet_sink_scapy_impl</scope><name>sptr</name></member>
+      <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a2ecbd98cedf28ac69c4e9bb632318cc7" prot="private" virt="non-virtual"><scope>gr::sigfox::packet_sink_scapy_impl</scope><name>state</name></member>
+      <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1ac1bf324b2bc60cb2aafbc169443f62d9" prot="private" virt="non-virtual"><scope>gr::sigfox::packet_sink_scapy_impl</scope><name>taille</name></member>
+      <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1aff8bd99921f43173eaef1d11b171c3cf" prot="private" virt="non-virtual"><scope>gr::sigfox::packet_sink_scapy_impl</scope><name>var</name></member>
+      <member refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl_1a3c7132df7fa0cb2918cb607893074762" prot="public" virt="non-virtual"><scope>gr::sigfox::packet_sink_scapy_impl</scope><name>~packet_sink_scapy_impl</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

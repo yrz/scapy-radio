@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<block>
+  <name>Dot15d4 PacketSink</name>
+  <key>dot15d4_packet_sink_scapy</key>
+  <category>[Scapy Radio]/Dot15d4</category>
+  <import>import dot15d4</import>
+  <make>dot15d4.packet_sink_scapy($threshold)</make>
+  <param>
+    <name>threshold</name>
+    <key>threshold</key>
+    <type>int</type>
+  </param>
+  <sink>
+    <name>in</name>
+    <type>float</type>
+  </sink>
+  <source>
+    <name>out</name>
+    <type>message</type>
+  </source>
+</block>

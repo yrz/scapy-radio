@@ -11,13 +11,16 @@ from __future__ import with_statement
 import sys,os,struct,socket,time
 from select import select
 from fcntl import ioctl
+
 import scapy.utils
 import scapy.utils6
+from scapy.packet import Packet, Padding
 from scapy.config import conf
 from scapy.data import *
 from scapy.supersocket import SuperSocket
 import scapy.arch
-from scapy.error import warning, Scapy_Exception
+from scapy.error import warning, Scapy_Exception, log_interactive, log_loading
+from scapy.arch.common import get_if
 
 
 
@@ -65,11 +68,22 @@ SOL_SOCKET = 1
 RTF_UP = 0x0001  # Route usable
 RTF_REJECT = 0x0200
 
+# From if_packet.h
+PACKET_HOST = 0  # To us
+PACKET_BROADCAST = 1  # To all
+PACKET_MULTICAST = 2  # To group
+PACKET_OTHERHOST = 3  # To someone else
+PACKET_OUTGOING = 4  # Outgoing of any type
+PACKET_LOOPBACK = 5  # MC/BRD frame looped back
+PACKET_USER = 6  # To user space
+PACKET_KERNEL = 7  # To kernel space
+PACKET_FASTROUTE = 6  # Fastrouted frame
+# Unused, PACKET_FASTROUTE and PACKET_LOOPBACK are invisible to user space
 
 
 LOOPBACK_NAME="lo"
 
-with os.popen("tcpdump -V 2> /dev/null") as _f:
+with os.popen("%s -V 2> /dev/null" % conf.prog.tcpdump) as _f:
     if _f.close() >> 8 == 0x7f:
         log_loading.warning("Failed to execute tcpdump. Check it is installed and in the PATH")
         TCPDUMP=0
@@ -108,7 +122,8 @@ def get_working_if():
         if ifflags & IFF_UP:
             return i
     return LOOPBACK_NAME
-def attach_filter(s, filter):
+
+def attach_filter(s, bpf_filter, iface):
     # XXX We generate the filter on the interface conf.iface 
     # because tcpdump open the "any" interface and ppp interfaces
     # in cooked mode. As we use them in raw mode, the filter will not
@@ -118,7 +133,11 @@ def attach_filter(s, filter):
     if not TCPDUMP:
         return
     try:
-        f = os.popen("%s -i %s -ddd -s 1600 '%s'" % (conf.prog.tcpdump,conf.iface,filter))
+        f = os.popen("%s -i %s -ddd -s 1600 '%s'" % (
+            conf.prog.tcpdump,
+            conf.iface if iface is None else iface,
+            bpf_filter,
+        ))
     except OSError,msg:
         log_interactive.warning("Failed to execute tcpdump: (%s)")
         return
@@ -132,7 +151,7 @@ def attach_filter(s, filter):
 
     # XXX. Argl! We need to give the kernel a pointer on the BPF,
     # python object header seems to be 20 bytes. 36 bytes for x86 64bits arch.
-    if scapy.arch.X86_64:
+    if scapy.arch.X86_64 or scapy.arch.ARM_64:
         bpfh = struct.pack("HL", nb, id(bpf)+36)
     else:
         bpfh = struct.pack("HI", nb, id(bpf)+20)  
@@ -270,19 +289,10 @@ def read_routes6():
     return routes   
 
 
-
-
-def get_if(iff,cmd):
-    s=socket.socket()
-    ifreq = ioctl(s, cmd, struct.pack("16s16x",iff))
-    s.close()
-    return ifreq
-
-
 def get_if_index(iff):
     return int(struct.unpack("I",get_if(iff, SIOCGIFINDEX)[16:20])[0])
 
-if os.uname()[4] == 'x86_64':
+if os.uname()[4] in [ 'x86_64', 'aarch64' ]:
     def get_last_packet_timestamp(sock):
         ts = ioctl(sock, SIOCGSTAMP, "1234567890123456")
         s,us = struct.unpack("QQ",ts)
@@ -314,7 +324,6 @@ class L3PacketSocket(SuperSocket):
         self.type = type
         self.ins = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(type))
         self.ins.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 0)
-        _flush_fd(self.ins)
         if iface:
             self.ins.bind((iface, type))
         if not nofilter:
@@ -324,13 +333,12 @@ class L3PacketSocket(SuperSocket):
                 else:
                     filter = "not (%s)" % conf.except_filter
             if filter is not None:
-                attach_filter(self.ins, filter)
+                attach_filter(self.ins, filter, iface)
+        _flush_fd(self.ins)
         self.ins.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 2**30)
         self.outs = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(type))
         self.outs.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 2**30)
-        if promisc is None:
-            promisc = conf.promisc
-        self.promisc = promisc
+        self.promisc = conf.promisc if promisc is None else promisc
         if self.promisc:
             if iface is None:
                 self.iff = get_if_list()
@@ -344,7 +352,7 @@ class L3PacketSocket(SuperSocket):
     def close(self):
         if self.closed:
             return
-        self.closed=1
+        self.closed = 1
         if self.promisc:
             for i in self.iff:
                 set_promisc(self.ins, i, 0)
@@ -391,29 +399,27 @@ class L3PacketSocket(SuperSocket):
             sdto = (iff, conf.l3types[type(x)])
         if sn[3] in conf.l2types:
             ll = lambda x:conf.l2types[sn[3]]()/x
+        sx = str(ll(x))
+        x.sent_time = time.time()
         try:
-            sx = str(ll(x))
-            x.sent_time = time.time()
             self.outs.sendto(sx, sdto)
-        except socket.error,msg:
-            x.sent_time = time.time()  # bad approximation
-            if conf.auto_fragment and msg[0] == 90:
+        except socket.error, msg:
+            if msg[0] == 22 and len(sx) < conf.min_pkt_size:
+                self.outs.send(sx + "\x00" * (conf.min_pkt_size - len(sx)))
+            elif conf.auto_fragment and msg[0] == 90:
                 for p in x.fragment():
                     self.outs.sendto(str(ll(p)), sdto)
             else:
                 raise
-                    
 
 
 
 class L2Socket(SuperSocket):
     desc = "read/write packets at layer 2 using Linux PF_PACKET sockets"
-    def __init__(self, iface = None, type = ETH_P_ALL, filter=None, nofilter=0):
-        if iface is None:
-            iface = conf.iface
+    def __init__(self, iface=None, type=ETH_P_ALL, promisc=None, filter=None, nofilter=0):
+        self.iface = conf.iface if iface is None else iface
         self.ins = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(type))
         self.ins.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 0)
-        _flush_fd(self.ins)
         if not nofilter: 
             if conf.except_filter:
                 if filter:
@@ -421,8 +427,12 @@ class L2Socket(SuperSocket):
                 else:
                     filter = "not (%s)" % conf.except_filter
             if filter is not None:
-                attach_filter(self.ins, filter)
-        self.ins.bind((iface, type))
+                attach_filter(self.ins, filter, iface)
+        self.promisc = conf.sniff_promisc if promisc is None else promisc
+        if self.promisc:
+            set_promisc(self.ins, self.iface)
+        self.ins.bind((self.iface, type))
+        _flush_fd(self.ins)
         self.ins.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 2**30)
         self.outs = self.ins
         self.outs.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 2**30)
@@ -434,7 +444,13 @@ class L2Socket(SuperSocket):
         else:
             self.LL = conf.default_l2
             warning("Unable to guess type (interface=%s protocol=%#x family=%i). Using %s" % (sa_ll[0],sa_ll[1],sa_ll[3],self.LL.name))
-            
+    def close(self):
+        if self.closed:
+            return
+        self.closed = 1
+        if self.promisc:
+            set_promisc(self.ins, self.iface, 0)
+        SuperSocket.close(self)
     def recv(self, x=MTU):
         pkt, sa_ll = self.ins.recvfrom(x)
         if sa_ll[2] == socket.PACKET_OUTGOING:
@@ -449,6 +465,17 @@ class L2Socket(SuperSocket):
             q = conf.raw_layer(pkt)
         q.time = get_last_packet_timestamp(self.ins)
         return q
+    def send(self, x):
+        try:
+            return SuperSocket.send(self, x)
+        except socket.error, msg:
+            if msg[0] == 22 and len(x) < conf.min_pkt_size:
+                padding = "\x00" * (conf.min_pkt_size - len(x))
+                if isinstance(x, Packet):
+                    return SuperSocket.send(self, x / Padding(load=padding))
+                else:
+                    return SuperSocket.send(self, str(x) + padding)
+            raise
 
 
 class L2ListenSocket(SuperSocket):
@@ -458,7 +485,6 @@ class L2ListenSocket(SuperSocket):
         self.outs = None
         self.ins = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(type))
         self.ins.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 0)
-        _flush_fd(self.ins)
         if iface is not None:
             self.ins.bind((iface, type))
         if not nofilter:
@@ -468,7 +494,7 @@ class L2ListenSocket(SuperSocket):
                 else:
                     filter = "not (%s)" % conf.except_filter
             if filter is not None:
-                attach_filter(self.ins, filter)
+                attach_filter(self.ins, filter, iface)
         if promisc is None:
             promisc = conf.sniff_promisc
         self.promisc = promisc
@@ -482,6 +508,7 @@ class L2ListenSocket(SuperSocket):
         if self.promisc:
             for i in self.iff:
                 set_promisc(self.ins, i)
+        _flush_fd(self.ins)
         self.ins.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 2**30)
     def close(self):
         if self.promisc:
@@ -497,7 +524,9 @@ class L2ListenSocket(SuperSocket):
             cls = conf.l3types[sa_ll[1]]
         else:
             cls = conf.default_l2
-            warning("Unable to guess type (interface=%s protocol=%#x family=%i). Using %s" % (sa_ll[0],sa_ll[1],sa_ll[3],cls.name))
+            warning("Unable to guess type (interface=%s protocol=%#x "
+                    "family=%i). Using %s" % (sa_ll[0], sa_ll[1], sa_ll[3],
+                                              cls.name))
 
         try:
             pkt = cls(pkt)
@@ -508,6 +537,7 @@ class L2ListenSocket(SuperSocket):
                 raise
             pkt = conf.raw_layer(pkt)
         pkt.time = get_last_packet_timestamp(self.ins)
+        pkt.direction = sa_ll[2]
         return pkt
     
     def send(self, x):

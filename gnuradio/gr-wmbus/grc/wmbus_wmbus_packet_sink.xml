@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<block>
+  <name>WMBus PacketSink</name>
+  <key>wmbus_wmbus_packet_sink</key>
+  <category>[Scapy Radio]/WM-Bus</category>
+  <import>import wmbus</import>
+  <make>wmbus.wmbus_packet_sink($param_mode, $debug)</make>
+  
+  <param>
+    <name>Mode</name>
+    <key>param_mode</key>
+    <value>1</value>
+    <type>int</type>
+
+    <option>
+      <name>S/T2C</name>
+      <key>1</key>
+    </option>
+    <option>
+      <name>C/T</name>
+      <key>2</key>
+    </option>
+    <option>
+      <name>C2C</name>
+      <key>3</key>
+    </option>
+  </param>
+
+  <param>
+    <name>Debug</name>
+    <key>debug</key>
+    <value>False</value>
+    <type>bool</type>
+    <option>
+      <name>On</name>
+      <key>True</key>
+    </option>
+    <option>
+      <name>Off</name>
+      <key>False</key>
+    </option>
+  </param>
+
+  <sink>
+    <name>in</name>
+    <type>byte</type>
+  </sink>
+
+  <source>
+    <name>out</name>
+    <type>message</type>
+  </source>
+
+</block>

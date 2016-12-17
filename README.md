@@ -15,13 +15,14 @@ It includes:
 * Bluetooth LE (advertising only)
 * 802.15.4 (used by Zigbee and 6LoWPAN)
 * ZWave (European frequency, 868MHz)
-
+* Sigfox (European frequency, 868MHz)
+* W-MBus (European frequency, 868MHz)
 
 # Requirements
 
 You need to have a full working GNU Radio 3.7 installation.
 
-**Note**: It has only been tested with GNU Radio 3.7.3 so far.
+**Note**: It has only been tested with GNU Radio 3.7.5 so far.
 
 The provided GRC files have been fully tested with an Ettus B210 SDR but they
 should work just as fine with any other UHD compatible device.
@@ -84,11 +85,11 @@ The tool can be launched by using the following command:
 One in the scapy interactive shell, switching between radio protocols is as
 simple as:
 
-` >>> switch_radio_protocol("ZWave")`
+` >>> switch_radio_protocol("zwave")`
 
 You can also specify the radio protocol directly to some "radio-enabled" functions:
 
-` >>> sniff_radio(radio="ZWave")`
+` >>> sniff_radio(radio="zwave")`
 
 
 ## Radio commands

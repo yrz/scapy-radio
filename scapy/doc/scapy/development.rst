@@ -5,28 +5,74 @@ Scapy development
 Project organization
 ====================
 
-Scapy development uses the Mercurial version control system.
-Scapy's reference repository is at http://hg.secdev.org/scapy/. 
+Scapy development uses the Git version control system. Scapy's
+reference repository is at https://github.com/secdev/scapy/.
 
-Project management is done with `Trac <http://trac.secdev.org/scapy>`_. Trac works on Scapy's reference repository.
-It provides a freely editable `Wiki <http://trac.secdev.org/scapy/wiki/>`_ (please contribute!) that can 
-reference tickets, changesets, files from the project. It also provides 
-a ticket management service that is used to avoid forgetting patches or bugs.
-
-Mercurial's distributed way of working enables Philippe to provide two repositories
-where anybody can commit stuff: 
-the Scapy `community repository <http://hg.secdev.org/scapy-com>`_ and the Scapy `Windows port repository <http://hg.secdev.org/scapy-com>`_. 
-
+Project management is done with `Github
+<https://github.com/secdev/scapy/>`_.  It provides a freely editable
+`Wiki <https://github.com/secdev/scapy/wiki/>`_ (please contribute!)
+that can reference tickets, changesets, files from the project. It
+also provides a ticket management service that is used to avoid
+forgetting patches or bugs.
 
 How to contribute
 =================
 
-* Found a bug in Scapy? `Add a ticket <http://trac.secdev.org/scapy/newticket>`_.
+* Found a bug in Scapy? `Add a ticket <https://github.com/secdev/scapy/issues/new>`_.
 * Improve this documentation.
-* Program a new layer and share it on the mailing list. Or add it as an enhancement on the bugtracker. 
-* Contribute new `regression tests <http://trac.secdev.org/scapy/wiki/RegressionTests>`_.
-* Upload packet samples for new protocols on the `packet samples page <http://trac.secdev.org/scapy/wiki/PacketsSamples>`_.
+* Program a new layer and share it on the mailing list, or create a pull request.
+* Contribute new `regression tests <https://github.com/secdev/scapy/wiki/Contrib:-RegressionTests>`_.
+* Upload packet samples for new protocols on the `packet samples page
+  <https://github.com/secdev/scapy/wiki/Contrib:-PacketSamples>`_.
 
+
+Improve the documentation
+=========================
+
+The documentation can be improved in several ways by:
+
+* Adding docstrings to the source code.
+* Adding usage examples to the documentation.
+
+Adding Docstrings
+-----------------
+The Scapy source code have few explanations of what a function is doing. A docstring, by adding explanation and
+expected input and output parameters, helps saving time for both the layer developers and the users looking for
+advanced features.
+
+An example of docstring from the ``scapy.fields.FlagsField`` class: ::
+
+  class FlagsField(BitField):
+    """ Handle Flag type field
+
+     Make sure all your flags have a label
+
+     Example:
+         >>> from scapy.packet import Packet
+         >>> class FlagsTest(Packet):
+                 fields_desc = [FlagsField("flags", 0, 8, ["f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7"])]
+         >>> FlagsTest(flags=9).show2()
+         ###[ FlagsTest ]###
+           flags     = f0+f3
+         >>> FlagsTest(flags=0).show2().strip()
+         ###[ FlagsTest ]###
+           flags     =
+
+     :param name: field's name
+     :param default: default value for the field
+     :param size: number of bits in the field
+     :param names: (list or dict) label for each flag, Least Significant Bit tag's name is written first
+     """
+
+It will contain a short oneline description of the class followed by some indications about its usage.
+You can add a usage example if it makes sense using the `doctest <https://docs.python.org/2.7/library/doctest.html>`_ format.
+Finally the classic python signature can be added following the `sphinx documentation  <http://www.sphinx-doc.org/en/stable/domains.html#python-signatures>`_.
+
+This task works in pair with writing non regression unit tests.
+
+Documentation
+-------------
+A way to improve the documentation content is by keeping it up to date with the latest version of Scapy. You can also help by adding usage examples of your own or directly gathered from existing online Scapy presentations.
 
 Testing with UTScapy
 ====================

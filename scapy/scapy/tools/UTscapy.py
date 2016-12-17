@@ -38,7 +38,7 @@ class File:
     def get_local(self):
         return bz2.decompress(base64.decodestring(self.local))
     def get_URL(self):
-        return URL
+        return self.URL
     def write(self, dir):
         if dir:
             dir += "/"
@@ -82,10 +82,12 @@ vzM985aHXOHAxQN2UQZbQkUv3D4Vc+lyvalAffv3Tyg4ks3a22kPXiyeCGweviNX
 0K8TKasyOhGsVamTUAZBXfQVw1zmdS4rHDnbHgtIjX3DcCt6UIr0BHTYjdV0JbPj
 r1APYgXihjQwM2M83AKIhwQQJv/F3JFOFCQNsEI0QA==""")
     def get_local_dict(cls):
-        return dict(map(lambda (x,y): (x, y.name),  filter(lambda (x,y): isinstance(y, File), cls.__dict__.items())))
+        return dict((x, y.name) for (x, y) in cls.__dict__.iteritems()
+                    if isinstance(y, File))
     get_local_dict = classmethod(get_local_dict)
     def get_URL_dict(cls):
-        return dict(map(lambda (x,y): (x, y.URL),  filter(lambda (x,y): isinstance(y, File), cls.__dict__.items())))
+        return dict((x, y.URL) for (x, y) in cls.__dict__.iteritems()
+                    if isinstance(y, File))
     get_URL_dict = classmethod(get_URL_dict)
 
 
@@ -138,15 +140,15 @@ class TestCampaign(TestClass):
 class TestSet(TestClass):
     def __init__(self, name):
         self.name = name
-        self.set = []
+        self.tests = []
         self.comments = ""
         self.keywords = []
         self.crc = None
         self.expand = 1
     def add_test(self, test):
-        self.set.append(test)
+        self.tests.append(test)
     def __iter__(self):
-        return self.set.__iter__()
+        return self.tests.__iter__()
 
 class UnitTest(TestClass):
     def __init__(self, name):
@@ -257,8 +259,9 @@ def compute_campaign_digests(test_campaign):
 def filter_tests_on_numbers(test_campaign, num):
     if num:
         for ts in test_campaign:
-            ts.set = filter(lambda t: t.num in num, ts.set)
-        test_campaign.campaign = filter(lambda ts: len(ts.set) > 0, test_campaign.campaign)
+            ts.tests = [t for t in ts.tests if t.num in num]
+        test_campaign.campaign = [ts for ts in test_campaign.campaign
+                                  if ts.tests]
 
 def filter_tests_keep_on_keywords(test_campaign, kw):
     def kw_match(lst, kw):
@@ -269,7 +272,7 @@ def filter_tests_keep_on_keywords(test_campaign, kw):
     
     if kw:
         for ts in test_campaign:
-            ts.set = filter(lambda t: kw_match(t.keywords, kw), ts.set)
+            ts.tests = [t for t in ts.tests if kw_match(t.keywords, kw)]
 
 def filter_tests_remove_on_keywords(test_campaign, kw):
     def kw_match(lst, kw):
@@ -280,11 +283,11 @@ def filter_tests_remove_on_keywords(test_campaign, kw):
     
     if kw:
         for ts in test_campaign:
-            ts.set = filter(lambda t: not kw_match(t.keywords, kw), ts.set)
+            ts.tests = [t for t in ts.tests if not kw_match(t.keywords, kw)]
 
 
 def remove_empty_testsets(test_campaign):
-    test_campaign.campaign = filter(lambda ts: len(ts.set) > 0, test_campaign.campaign)
+    test_campaign.campaign = [ts for ts in test_campaign.campaign if ts.tests]
 
 
 #### RUN CAMPAIGN #####
@@ -319,6 +322,7 @@ def run_campaign(test_campaign, get_interactive_session, verb=2):
     if verb:
         print >>sys.stderr,"Campaign CRC=%(crc)s  SHA=%(sha)s" % test_campaign
         print >>sys.stderr,"PASSED=%i FAILED=%i" % (passed, failed)
+    return failed
 
 
 #### INFO LINES ####
@@ -346,10 +350,11 @@ def campaign_to_TEXT(test_campaign):
     output += "Passed=%(passed)i\nFailed=%(failed)i\n\n%(headcomments)s\n" % test_campaign
     
     for testset in test_campaign:
-        output += "######\n## %(name)s\n######\n%(comments)s\n\n" % testset
-        for t in testset:
-            if t.expand:
-                output += "###(%(num)03i)=[%(result)s] %(name)s\n%(comments)s\n%(output)s\n\n" % t
+        if any(t.expand for t in testset):
+            output += "######\n## %(name)s\n######\n%(comments)s\n\n" % testset
+            for t in testset:
+                if t.expand:
+                    output += "###(%(num)03i)=[%(result)s] %(name)s\n%(comments)s\n%(output)s\n\n" % t
 
     return output
  
@@ -359,10 +364,11 @@ def campaign_to_ANSI(test_campaign):
     output += "Passed=%(passed)i\nFailed=%(failed)i\n\n%(headcomments)s\n" % test_campaign
     
     for testset in test_campaign:
-        output += "######\n## %(name)s\n######\n%(comments)s\n\n" % testset
-        for t in testset:
-            if t.expand:
-                output += "###(%(num)03i)=[%(result)s] %(name)s\n%(comments)s\n%(output)s\n\n" % t
+        if any(t.expand for t in testset):
+            output += "######\n## %(name)s\n######\n%(comments)s\n\n" % testset
+            for t in testset:
+                if t.expand:
+                    output += "###(%(num)03i)=[%(result)s] %(name)s\n%(comments)s\n%(output)s\n\n" % t
 
     return output
 
@@ -566,13 +572,12 @@ def main(argv):
                 LOCAL = 1
             elif opt == "-n":
                 NUM = []
-                for v in map( lambda x: x.strip(), optarg.split(",") ):
+                for v in (x.strip() for x in optarg.split(",")):
                     try:
                         NUM.append(int(v))
                     except ValueError:
-                        v1,v2 = map(int, v.split("-"))
-                        for vv in range(v1,v2+1):
-                            NUM.append(vv)
+                        v1, v2 = map(int, v.split("-", 1))
+                        NUM.extend(xrange(v1, v2 + 1))
             elif opt == "-m":
                 MODULES.append(optarg)
             elif opt == "-k":
@@ -635,7 +640,7 @@ def main(argv):
 
     # Run tests
     test_campaign.output_file = OUTPUTFILE
-    run_campaign(test_campaign, autorun_func[FORMAT], verb=VERB)
+    result = run_campaign(test_campaign, autorun_func[FORMAT], verb=VERB)
 
     # Shrink passed
     if ONLYFAILED:
@@ -659,6 +664,7 @@ def main(argv):
 
     OUTPUTFILE.write(output)
     OUTPUTFILE.close()
+    return result
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    exit(main(sys.argv[1:]))

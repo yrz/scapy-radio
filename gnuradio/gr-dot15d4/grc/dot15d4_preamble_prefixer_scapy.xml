@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<block>
+  <name>Dot15d4 Preamble</name>
+  <key>dot15d4_preamble_prefixer_scapy</key>
+  <category>[Scapy Radio]/Dot15d4</category>
+  <import>import dot15d4</import>
+  <make>dot15d4.preamble_prefixer_scapy()</make>
+	<sink>
+		<name>in</name>
+		<type>message</type>
+	</sink>
+
+	<source>
+		<name>out</name>
+		<type>message</type>
+	</source>
+</block>

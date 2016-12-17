@@ -9,15 +9,13 @@ PacketList: holds several packets and allows to do operations on them.
 
 
 import os,subprocess
-from config import conf
-from base_classes import BasePacket,BasePacketList
 from collections import defaultdict
 
-from utils import do_graph,hexdump,make_table,make_lined_table,make_tex_table,get_temp_file
+from scapy.config import conf
+from scapy.base_classes import BasePacket,BasePacketList
+from scapy.utils import do_graph,hexdump,make_table,make_lined_table,make_tex_table,get_temp_file
 
-import arch
-if arch.GNUPLOT:
-    Gnuplot=arch.Gnuplot
+from scapy.arch import plt, MATPLOTLIB_INLINED, MATPLOTLIB_DEFAULT_PLOT_KARGS
 
 
 
@@ -26,7 +24,7 @@ if arch.GNUPLOT:
 #############
 
 class PacketList(BasePacketList):
-    res = []
+    __slots__ = ["stats", "res", "listname"]
     def __init__(self, res=None, name="PacketList", stats=None):
         """create a packet list from a list of packets
            res: the list of packets
@@ -40,6 +38,8 @@ class PacketList(BasePacketList):
             res = res.res
         self.res = res
         self.listname = name
+    def __len__(self):
+        return len(self.res)
     def _elt2pkt(self, elt):
         return elt
     def _elt2sum(self, elt):
@@ -47,8 +47,7 @@ class PacketList(BasePacketList):
     def _elt2show(self, elt):
         return self._elt2sum(elt)
     def __repr__(self):
-#        stats=dict.fromkeys(self.stats,0) ## needs python >= 2.3  :(
-        stats = dict(map(lambda x: (x,0), self.stats))
+        stats = dict((x, 0) for x in self.stats)
         other = 0
         for r in self.res:
             f = 0
@@ -62,7 +61,7 @@ class PacketList(BasePacketList):
         s = ""
         ct = conf.color_theme
         for p in self.stats:
-            s += " %s%s%s" % (ct.packetlist_proto(p.name),
+            s += " %s%s%s" % (ct.packetlist_proto(p._name),
                               ct.punct(":"),
                               ct.packetlist_value(stats[p]))
         s += " %s%s%s" % (ct.packetlist_proto("Other"),
@@ -101,19 +100,19 @@ lfilter: truth function to apply to each packet to decide whether it will be dis
                 print self._elt2sum(r)
             else:
                 print prn(r)
-    def nsummary(self,prn=None, lfilter=None):
+    def nsummary(self, prn=None, lfilter=None):
         """prints a summary of each packet with the packet's number
 prn:     function to apply to each packet instead of lambda x:x.summary()
 lfilter: truth function to apply to each packet to decide whether it will be displayed"""
-        for i in range(len(self.res)):
+        for i, res in enumerate(self.res):
             if lfilter is not None:
-                if not lfilter(self.res[i]):
+                if not lfilter(res):
                     continue
             print conf.color_theme.id(i,fmt="%04i"),
             if prn is None:
-                print self._elt2sum(self.res[i])
+                print self._elt2sum(res)
             else:
-                print prn(self.res[i])
+                print prn(res)
     def display(self): # Deprecated. Use show()
         """deprecated. is show()"""
         self.show()
@@ -136,49 +135,95 @@ lfilter: truth function to apply to each packet to decide whether it will be dis
         """Same as make_table, but print a table with LaTeX syntax"""
         return make_tex_table(self.res, *args, **kargs)
 
-    def plot(self, f, lfilter=None,**kargs):
-        """Applies a function to each packet to get a value that will be plotted with GnuPlot. A gnuplot object is returned
-        lfilter: a truth function that decides whether a packet must be ploted"""
-        g=Gnuplot.Gnuplot()
-        l = self.res
-        if lfilter is not None:
-            l = filter(lfilter, l)
-        l = map(f,l)
-        g.plot(Gnuplot.Data(l, **kargs))
-        return g
+    def plot(self, f, lfilter=None, plot_xy=False, **kargs):
+        """Applies a function to each packet to get a value that will be plotted
+        with matplotlib. A list of matplotlib.lines.Line2D is returned.
+
+        lfilter: a truth function that decides whether a packet must be ploted
+        """
+
+        # Get the list of packets
+        if lfilter is None:
+            l = [f(e) for e in self.res]
+        else:
+            l = [f(e) for e in self.res if lfilter(e)]
+
+        # Mimic the default gnuplot output
+        if kargs == {}:
+            kargs = MATPLOTLIB_DEFAULT_PLOT_KARGS
+        if plot_xy:
+            lines = plt.plot(*zip(*l), **kargs)
+        else:
+            lines = plt.plot(l, **kargs)
+
+        # Call show() if matplotlib is not inlined
+        if not MATPLOTLIB_INLINED:
+            plt.show()
+
+        return lines
 
     def diffplot(self, f, delay=1, lfilter=None, **kargs):
         """diffplot(f, delay=1, lfilter=None)
-        Applies a function to couples (l[i],l[i+delay])"""
-        g = Gnuplot.Gnuplot()
-        l = self.res
-        if lfilter is not None:
-            l = filter(lfilter, l)
-        l = map(f,l[:-delay],l[delay:])
-        g.plot(Gnuplot.Data(l, **kargs))
-        return g
+        Applies a function to couples (l[i],l[i+delay])
 
-    def multiplot(self, f, lfilter=None, **kargs):
-        """Uses a function that returns a label and a value for this label, then plots all the values label by label"""
-        g=Gnuplot.Gnuplot()
-        l = self.res
-        if lfilter is not None:
-            l = filter(lfilter, l)
+        A list of matplotlib.lines.Line2D is returned.
+        """
 
-        d={}
-        for e in l:
-            k,v = f(e)
-            if k in d:
-                d[k].append(v)
-            else:
-                d[k] = [v]
-        data=[]
-        for k in d:
-            data.append(Gnuplot.Data(d[k], title=k, **kargs))
+        # Get the list of packets
+        if lfilter is None:
+            l = [f(self.res[i], self.res[i+1])
+                    for i in xrange(len(self.res) - delay)]
+        else:
+            l = [f(self.res[i], self.res[i+1])
+                    for i in xrange(len(self.res) - delay)
+                        if lfilter(self.res[i])]
 
-        g.plot(*data)
-        return g
-        
+        # Mimic the default gnuplot output
+        if kargs == {}:
+            kargs = MATPLOTLIB_DEFAULT_PLOT_KARGS
+        lines = plt.plot(l, **kargs)
+
+        # Call show() if matplotlib is not inlined
+        if not MATPLOTLIB_INLINED:
+            plt.show()
+
+        return lines
+
+    def multiplot(self, f, lfilter=None, plot_xy=False, **kargs):
+        """Uses a function that returns a label and a value for this label, then
+        plots all the values label by label.
+
+        A list of matplotlib.lines.Line2D is returned.
+        """
+
+        # Get the list of packets
+        if lfilter is None:
+            l = (f(e) for e in self.res)
+        else:
+            l = (f(e) for e in self.res if lfilter(e))
+
+        # Apply the function f to the packets
+        d = {}
+        for k, v in l:
+            d.setdefault(k, []).append(v)
+
+        # Mimic the default gnuplot output
+        if not kargs:
+            kargs = MATPLOTLIB_DEFAULT_PLOT_KARGS
+
+        if plot_xy:
+            lines = [plt.plot(*zip(*pl), **dict(kargs, label=k))
+                     for k, pl in d.iteritems()]
+        else:
+            lines = [plt.plot(pl, **dict(kargs, label=k))
+                     for k, pl in d.iteritems()]
+        plt.legend(loc="center right", bbox_to_anchor=(1.5, 0.5))
+
+        # Call show() if matplotlib is not inlined
+        if not MATPLOTLIB_INLINED:
+            plt.show()
+
+        return lines
 
     def rawhexdump(self):
         """Prints an hexadecimal dump of each packet in the list"""
@@ -188,43 +233,43 @@ lfilter: truth function to apply to each packet to decide whether it will be dis
     def hexraw(self, lfilter=None):
         """Same as nsummary(), except that if a packet has a Raw layer, it will be hexdumped
         lfilter: a truth function that decides whether a packet must be displayed"""
-        for i in range(len(self.res)):
-            p = self._elt2pkt(self.res[i])
+        for i, res in enumerate(self.res):
+            p = self._elt2pkt(res)
             if lfilter is not None and not lfilter(p):
                 continue
             print "%s %s %s" % (conf.color_theme.id(i,fmt="%04i"),
                                 p.sprintf("%.time%"),
-                                self._elt2sum(self.res[i]))
+                                self._elt2sum(res))
             if p.haslayer(conf.raw_layer):
                 hexdump(p.getlayer(conf.raw_layer).load)
 
     def hexdump(self, lfilter=None):
         """Same as nsummary(), except that packets are also hexdumped
         lfilter: a truth function that decides whether a packet must be displayed"""
-        for i in range(len(self.res)):
-            p = self._elt2pkt(self.res[i])
+        for i, res in enumerate(self.res):
+            p = self._elt2pkt(res)
             if lfilter is not None and not lfilter(p):
                 continue
             print "%s %s %s" % (conf.color_theme.id(i,fmt="%04i"),
                                 p.sprintf("%.time%"),
-                                self._elt2sum(self.res[i]))
+                                self._elt2sum(res))
             hexdump(p)
 
     def padding(self, lfilter=None):
         """Same as hexraw(), for Padding layer"""
-        for i in range(len(self.res)):
-            p = self._elt2pkt(self.res[i])
+        for i in enumerate(self.res):
+            p = self._elt2pkt(res)
             if p.haslayer(conf.padding_layer):
                 if lfilter is None or lfilter(p):
                     print "%s %s %s" % (conf.color_theme.id(i,fmt="%04i"),
                                         p.sprintf("%.time%"),
-                                        self._elt2sum(self.res[i]))
+                                        self._elt2sum(res))
                     hexdump(p.getlayer(conf.padding_layer).load)
 
     def nzpadding(self, lfilter=None):
         """Same as padding() but only non null padding"""
-        for i in range(len(self.res)):
-            p = self._elt2pkt(self.res[i])
+        for i in enumerate(self.res):
+            p = self._elt2pkt(res)
             if p.haslayer(conf.padding_layer):
                 pad = p.getlayer(conf.padding_layer).load
                 if pad == pad[0]*len(pad):
@@ -232,32 +277,48 @@ lfilter: truth function to apply to each packet to decide whether it will be dis
                 if lfilter is None or lfilter(p):
                     print "%s %s %s" % (conf.color_theme.id(i,fmt="%04i"),
                                         p.sprintf("%.time%"),
-                                        self._elt2sum(self.res[i]))
+                                        self._elt2sum(res))
                     hexdump(p.getlayer(conf.padding_layer).load)
         
 
     def conversations(self, getsrcdst=None,**kargs):
         """Graphes a conversations between sources and destinations and display it
         (using graphviz and imagemagick)
-        getsrcdst: a function that takes an element of the list and return the source and dest
-                   by defaults, return source and destination IP
+        getsrcdst: a function that takes an element of the list and
+                   returns the source, the destination and optionally
+                   a label. By default, returns the IP source and
+                   destination from IP and ARP layers
         type: output type (svg, ps, gif, jpg, etc.), passed to dot's "-T" option
         target: filename or redirect. Defaults pipe to Imagemagick's display program
         prog: which graphviz program to use"""
         if getsrcdst is None:
-            getsrcdst = lambda x:(x['IP'].src, x['IP'].dst)
+            def getsrcdst(pkt):
+                if 'IP' in pkt:
+                    return (pkt['IP'].src, pkt['IP'].dst)
+                if 'ARP' in pkt:
+                    return (pkt['ARP'].psrc, pkt['ARP'].pdst)
+                raise TypeError()
         conv = {}
         for p in self.res:
             p = self._elt2pkt(p)
             try:
                 c = getsrcdst(p)
             except:
-                #XXX warning()
+                # No warning here: it's OK that getsrcdst() raises an
+                # exception, since it might be, for example, a
+                # function that expects a specific layer in each
+                # packet. The try/except approach is faster and
+                # considered more Pythonic than adding tests.
                 continue
-            conv[c] = conv.get(c,0)+1
+            if len(c) == 3:
+                conv.setdefault(c[:2], set()).add(c[2])
+            else:
+                conv[c] = conv.get(c, 0) + 1
         gr = 'digraph "conv" {\n'
-        for s,d in conv:
-            gr += '\t "%s" -> "%s"\n' % (s,d)
+        for (s, d), l in conv.iteritems():
+            gr += '\t "%s" -> "%s" [label="%s"]\n' % (
+                s, d, ', '.join(str(x) for x in l) if isinstance(l, set) else l
+            )
         gr += "}\n"        
         return do_graph(gr, **kargs)
 
@@ -302,16 +363,17 @@ lfilter: truth function to apply to each packet to decide whether it will be dis
             return 2+math.log(n)/4.0
 
         def minmax(x):
-            m,M = min(x),max(x)
+            m, M = reduce(lambda a, b: (min(a[0], b[0]), max(a[1], b[1])),
+                          ((a, a) for a in x))
             if m == M:
                 m = 0
             if M == 0:
                 M = 1
-            return m,M
+            return m, M
 
-        mins,maxs = minmax(map(lambda (x,y): x, sl.values()))
-        mine,maxe = minmax(map(lambda (x,y): x, el.values()))
-        mind,maxd = minmax(dl.values())
+        mins, maxs = minmax(x for x, _ in sl.itervalues())
+        mine, maxe = minmax(x for x, _ in el.itervalues())
+        mind, maxd = minmax(dl.itervalues())
     
         gr = 'digraph "afterglow" {\n\tedge [len=2.5];\n'
 
@@ -345,8 +407,8 @@ lfilter: truth function to apply to each packet to decide whether it will be dis
         import pyx
         d = pyx.document.document()
         l = len(self.res)
-        for i in range(len(self.res)):
-            elt = self.res[i]
+        for i in enumerate(self.res):
+            elt = res
             c = self._elt2pkt(elt).canvas_dump(**kargs)
             cbb = c.bbox()
             c.text(cbb.left(),cbb.top()+1,r"\font\cmssfont=cmss12\cmssfont{Frame %i/%i}" % (i,l),[pyx.text.size.LARGE])
@@ -477,16 +539,10 @@ lfilter: truth function to apply to each packet to decide whether it will be dis
 
 
 class SndRcvList(PacketList):
+    __slots__ = []
     def __init__(self, res=None, name="Results", stats=None):
         PacketList.__init__(self, res, name, stats)
     def _elt2pkt(self, elt):
         return elt[1]
     def _elt2sum(self, elt):
         return "%s ==> %s" % (elt[0].summary(),elt[1].summary()) 
-
-
-
-    
-
-        
-                                                                               

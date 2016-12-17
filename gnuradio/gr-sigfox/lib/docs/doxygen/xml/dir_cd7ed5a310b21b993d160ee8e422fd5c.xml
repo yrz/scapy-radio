@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.8">
+  <compounddef id="dir_cd7ed5a310b21b993d160ee8e422fd5c" kind="dir">
+    <compoundname>sigfox</compoundname>
+    <innerfile refid="api_8h">api.h</innerfile>
+    <innerfile refid="packet__sink__scapy_8h">packet_sink_scapy.h</innerfile>
+    <innerfile refid="preamble__prefixer__scapy_8h">preamble_prefixer_scapy.h</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/include/sigfox/"/>
+  </compounddef>
+</doxygen>

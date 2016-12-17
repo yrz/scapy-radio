@@ -26,9 +26,10 @@ include_directories(${Boost_INCLUDE_DIR})
 link_directories(${Boost_LIBRARY_DIRS})
 
 list(APPEND scapy_radio_sources
-    add_gr_header_impl.cc
-    strip_gr_header_impl.cc
+    #add_gr_header_impl.cc
+    #strip_gr_header_impl.cc
     Tagged_stream_2_PDU_2_impl.cc
+    ScapyRadio_PDU_to_TS_impl.cc
 )
 
 set(scapy_radio_sources "${scapy_radio_sources}" PARENT_SCOPE)

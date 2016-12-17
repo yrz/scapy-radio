@@ -1,1 +1,0 @@
-/usr/bin/c++  -fPIC -O3 -DNDEBUG   -shared -Wl,-soname,_scapy_radio_swig.so -o _scapy_radio_swig.so CMakeFiles/_scapy_radio_swig.dir/scapy_radio_swigPYTHON_wrap.cxx.o -lpython2.7 ../lib/libgnuradio-scapy_radio.so -lboost_filesystem -lboost_system -lgnuradio-runtime -lgnuradio-pmt -Wl,-rpath,/home/pentest/Downloads/scapy-radio/gnuradio/gr-scapy_radio/lib: 

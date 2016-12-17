@@ -132,7 +132,7 @@ class AddressTLVField(StrField):
         nbr /= 4
         x=x[6:]
         list=[]
-        for i in range(0,nbr):
+        for i in xrange(0, nbr):
             add = x[4*i:4*i+4]
             list.append(inet_ntoa(add))
         return list
@@ -226,8 +226,7 @@ class CommonHelloTLVField(StrField):
 class CommonSessionTLVField(StrField):
     islist = 1
     def m2i(self, pkt, x):
-        l = []
-        l.append(struct.unpack("!H",x[6:8])[0])
+        l = [struct.unpack("!H", x[6:8])[0]]
         octet = struct.unpack("B",x[8:9])[0]
         l.append( (octet & 2**7 ) >> 7 )
         l.append( (octet & 2**6 ) >> 6 )

@@ -41,5 +41,5 @@ include(GrTest)
 
 set(GR_TEST_TARGET_DEPS gnuradio-scapy_radio)
 set(GR_TEST_PYTHON_DIRS ${CMAKE_BINARY_DIR}/swig)
-GR_ADD_TEST(qa_add_gr_header ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_add_gr_header.py)
-GR_ADD_TEST(qa_strip_gr_header ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_strip_gr_header.py)
+#GR_ADD_TEST(qa_add_gr_header ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_add_gr_header.py)
+#GR_ADD_TEST(qa_strip_gr_header ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_strip_gr_header.py)

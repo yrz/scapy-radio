@@ -7,11 +7,11 @@ Download and Installation
 Overview
 ========
 
- 0. Install *Python 2.5*.
+ 0. Install *Python 2*.
  1. Download and install *Scapy*.
  2. (For non-Linux platforms): Install *libpcap and libdnet* and their Python wrappers.
  3. (Optional): Install *additional software* for special features.
- 4. Run Scapy with root priviledges.
+ 4. Run Scapy with root privileges.
  
 Each of these steps can be done in a different way dependent on your platform and on the version of Scapy you want to use. 
 
@@ -71,28 +71,28 @@ $ sudo scapy
    To make a zip executable, some bytes have been added before the zip header.
    Most zip programs handle this, but not all. If your zip program complains
    about the zip file to be corrupted, either change it, or download a 
-   non-executable zip at http://hg.secdev.org/scapy/archive/tip.zip
+   non-executable zip at https://github.com/secdev/scapy/archive/master.zip
 
  
 Current development version
 ----------------------------
 
 .. index::
-   single: Mercurial, repository
+   single: Git, repository
 
-If you always want the latest version with all new features and bugfixes, use Scapy's Mercurial repository:
+If you always want the latest version with all new features and bugfixes, use Scapy's Git repository:
 
-1. Install the `Mercurial <http://www.selenic.com/mercurial/>`_ version control system. For example, on Debian/Ubuntu use::
+1. Install the Git version control system. For example, on Debian/Ubuntu use::
 
-      $ sudo apt-get install mercurial
+      $ sudo apt-get install git
 
    or on OpenBSD:: 
     
-      $ pkg_add mercurial
+      $ pkg_add git
 
 2. Check out a clone of Scapy's repository::
     
-   $ hg clone http://hg.secdev.org/scapy
+   $ git clone https://github.com/secdev/scapy
     
 3. Install Scapy in the standard distutils way:: 
     
@@ -101,12 +101,9 @@ If you always want the latest version with all new features and bugfixes, use Sc
     
 Then you can always update to the latest version::
 
-$ hg pull
-$ hg update       
-$ sudo python setup.py install
+   $ git pull
+   $ sudo python setup.py install
  
-For more information about Mercurial, have a look at the `Mercurial book <http://hgbook.red-bean.com/>`_. 
-
 
 Installing Scapy v1.2
 =====================
@@ -114,7 +111,7 @@ Installing Scapy v1.2
 As Scapy v1 consists only of one single Python file, installation is easy:
 Just download the last version and run it with your Python interpreter::
 
- $ wget http://hg.secdev.org/scapy/raw-file/v1.2.0.2/scapy.py
+ $ wget https://raw.githubusercontent.com/secdev/scapy/v1.2.0.2/scapy.py
  $ sudo python scapy.py
 
 .. index::
@@ -147,7 +144,7 @@ Here are the topics involved and some examples that you can use to try if your i
      >>> p=IP()/ICMP()
      >>> p.pdfdump("test.pdf") 
  
-* Graphs. ``conversations()`` needs `Grapviz <http://www.graphviz.org/>`_ and `ImageMagick <http://www.imagemagick.org/>`_.
+* Graphs. ``conversations()`` needs `Graphviz <http://www.graphviz.org/>`_ and `ImageMagick <http://www.imagemagick.org/>`_.
  
   .. code-block:: python
 
@@ -220,9 +217,9 @@ Here's how to install Scapy on Fedora 9:
 
 .. code-block:: text
 
-    # yum install mercurial python-devel
+    # yum install git python-devel
     # cd /tmp
-    # hg clone http://hg.secdev.org/scapy
+    # git clone https://github.com/secdev/scapy
     # cd scapy
     # python setup.py install
     
@@ -241,60 +238,36 @@ Some optional packages:
 Mac OS X
 --------
 
-Here's how to install Scapy on Mac OS 10.4 (Tiger) or 10.5 (Leopard).
+On Mac OS X, Scapy does not work natively. You need to install Python bindings
+to use libdnet and libpcap. You can choose to install using either Homebrew or
+MacPorts. They both work fine, yet Homebrew is used to run unit tests with
+`Travis CI <https://travis-ci.org>`_. 
 
-Set up a development environment
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1. Install X11. 
-   On the Mac OS X DVD, it is located in the "Optional Installs.mpkg" package.
- 
-2. Install SDK.
-   On the Mac OS X DVD, it is located in the "Xcode Tools/Packages" directory.
+Install using Homebrew
+^^^^^^^^^^^^^^^^^^^^^^
 
-3. Install Python 2.5 from Python.org.
-   Using Apple's Python version will lead to some problems.
-   Get it from http://www.python.org/ftp/python/2.5.2/python-2.5.2-macosx.dmg
+1. Update Homebrew::
+
+   $ sudo brew update
+
+2. Install Python bindings::
+
+   $ sudo brew install --with-python libdnet
+   $ sudo brew install https://raw.githubusercontent.com/secdev/scapy/master/.travis/pylibpcap.r
+
 
 Install using MacPorts
 ^^^^^^^^^^^^^^^^^^^^^^
 
-3. Install MacPorts
-   Download the dmg from macports.org and install it.
-     
-4. Update MacPorts::
+1. Update MacPorts::
 
    $ sudo port -d selfupdate
 
-5. Install Scapy::
+2. Install Python bindings::
 
-   $ sudo port install scapy
+   $ sudo port install py-libdnet py-pylibpcap
 
-You can then update to the latest version as shown in the generic installation above. 
-
-Install from original sources
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Install libdnet and its Python wrapper::
-
- $ wget http://libdnet.googlecode.com/files/libdnet-1.12.tgz
- $ tar xfz libdnet-1.12.tgz 
- $ ./configure
- $ make
- $ sudo make install
- $ cd python
- $ python2.5 setup.py install
-
-Install libpcap and its Python wrapper::
-
- $ wget http://dfn.dl.sourceforge.net/sourceforge/pylibpcap/pylibpcap-0.6.2.tar.gz
- $ tar xfz pylibpcap-0.6.2.tar.gz
- $ cd pylibpcap-0.6.2
- $ python2.5 setup.py install
-
-Optionally: Install readline::
-
- $ python `python -c "import pimp; print pimp.__file__"` -i readline
 
 OpenBSD
 -------
@@ -304,10 +277,10 @@ Here's how to install Scapy on OpenBSD 4.3.
 .. code-block:: text
 
  # export PKG_PATH=ftp://ftp.openbsd.org/pub/OpenBSD/4.3/packages/i386/
- # pkg_add py-libpcap py-libdnet mercurial
+ # pkg_add py-libpcap py-libdnet git
  # ln -sf /usr/local/bin/python2.5 /usr/local/bin/python
  # cd /tmp
- # hg clone http://hg.secdev.org/scapy
+ # git clone http://github.com/secdev/scapy
  # cd scapy
  # python setup.py install
 
@@ -355,7 +328,7 @@ PyX (very large download, will install texlive etc.)
 
 .. code-block:: text
 
- # wget http://www.secdev.org/projects/scapy/files/ethertypes -O /etc/ethertypes
+ # wget http://git.netfilter.org/ebtables/plain/ethertypes -O /etc/ethertypes
 
 python-bz2 (for UTscapy)
 
@@ -382,7 +355,7 @@ Scapy is primarily being developed for Unix-like systems and works best on those
 You need the following software packages in order to install Scapy on Windows:
 
   * `Python <http://www.python.org>`_: `python-2.5.4.msi <http://www.python.org/ftp/python/2.5.4/python-2.5.4.msi>`_. `python-2.6.3.msi <http://www.python.org/ftp/python/2.6.3/python-2.6.3.msi>`_. After installation, add the Python installation directory and its \Scripts subdirectory to your PATH. Depending on your Python version, the defaults would be ``C:\Python25`` and ``C:\Python25\Scripts`` or ``C:\Python26`` and ``C:\Python26\Scripts`` respectively.
-  * `Scapy <http://www.secdev.org/projects/scapy/>`_: `latest development version <http://hg.secdev.org/scapy/archive/tip.zip>`_ from the `Mercurial repository <http://hg.secdev.org/scapy>`_. Unzip the archive, open a command prompt in that directory and run "python setup.py install". 
+  * `Scapy <http://www.secdev.org/projects/scapy/>`_: `latest development version <https://github.com/secdev/scapy/archive/master.zip>`_ from the `Git repository <https://github.com/secdev/scapy>`_. Unzip the archive, open a command prompt in that directory and run "python setup.py install". 
   * `pywin32 <http://python.net/crew/mhammond/win32/Downloads.html>`_: `pywin32-214.win32-py2.5.exe <http://surfnet.dl.sourceforge.net/sourceforge/pywin32/pywin32-214.win32-py2.5.exe>`_ `pywin32-214.win32-py2.6.exe <http://downloads.sourceforge.net/project/pywin32/pywin32/Build%20214/pywin32-214.win32-py2.6.exe>`_
   * `WinPcap <http://www.winpcap.org/>`_: `WinPcap_4_1_1.exe <http://www.winpcap.org/install/bin/WinPcap_4_1_1.exe>`_. You might want to choose "[x] Automatically start the WinPcap driver at boot time", so that non-privileged users can sniff, especially under Vista and Windows 7. If you want to use the ethernet vendor database to resolve MAC addresses or use the ``wireshark()`` command, download `Wireshark <http://www.wireshark.org/>`_ which already includes WinPcap. 
   * `pypcap <http://code.google.com/p/pypcap/>`_: `pcap-1.1-scapy-20090720.win32-py25.exe <http://www.secdev.org/projects/scapy/files/pcap-1.1-scapy-20090720.win32-py2.5.exe>`_ `pcap-1.1-scapy-20090720.win32-py2.6.exe <http://www.secdev.org/projects/scapy/files/pcap-1.1-scapy-20090720.win32-py2.6.exe>`_. This is a *special version for Scapy*, as the original leads to some timing problems. Now works on Vista and Windows 7, too. Under Vista/Win7 please right-click on the installer and choose "Run as administrator".
@@ -395,7 +368,7 @@ For your convenience direct links are given to the versions I used (for Python 2
 
 After all packages are installed, open a command prompt (cmd.exe) and run Scapy by typing ``scapy``. If you have set the PATH correctly, this will find a little batch file in your ``C:\Python26\Scripts`` directory and instruct the Python interpreter to load Scapy.
 
-If really nothing seems to work, consider skipping the Windows version and using Scapy from a Linux Live CD -- either in a virtual machine on your Windows host or by booting from CDROM: An older version of Scapy is already included in grml and BackTrack for example. While using the Live CD you can easily upgrade to the lastest Scapy version by typing ``cd /tmp && wget scapy.net``.
+If really nothing seems to work, consider skipping the Windows version and using Scapy from a Linux Live CD -- either in a virtual machine on your Windows host or by booting from CDROM: An older version of Scapy is already included in grml and BackTrack for example. While using the Live CD you can easily upgrade to the latest Scapy version by typing ``cd /tmp && wget scapy.net``.
 
 Optional packages
 ^^^^^^^^^^^^^^^^^
@@ -443,6 +416,52 @@ Known bugs
  * Packets cannot be sent to localhost (or local IP addresses on your own host).
  * The ``voip_play()`` functions do not work because they output the sound via ``/dev/dsp`` which is not available on Windows. 
  
- 
 
+Build the documentation offline
+===============================
+The Scapy project's documentation is written using reStructuredText (files \*.rst) and can be built using
+the `Sphinx <http://www.sphinx-doc.org/>`_ python library. The official online version is available
+on `readthedocs <http://scapy.readthedocs.io/>`_.
 
+HTML version
+------------
+The instructions to build the HTML version are: ::
+
+   (activate a virtualenv)
+   pip install sphinx
+   cd doc/scapy
+   make html
+
+You can now open the resulting HTML file ``_build/html/index.html`` in your favorite web browser.
+
+To use the ReadTheDocs' template, you will have to install the corresponding theme with: ::
+
+   pip install sphinx_rtd_theme
+
+and edit the doc/scapy/conf.py file to have: ::
+
+   import sphinx_rtd_theme
+   #html_style = 'default.css'
+   html_theme = "sphinx_rtd_theme"
+   html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+
+Note: make sure you commented out the ``html_style`` variable.
+
+UML diagram
+-----------
+Using ``pyreverse`` you can build an UML representation of the Scapy source code's object hierarchy. Here is an
+example on how to build the inheritence graph for the Fields objects : ::
+
+   (activate a virtualenv)
+   pip install pylint
+   cd scapy/
+   pyreverse -o png -p fields scapy/fields.py
+
+This will generate a ``classes_fields.png`` picture containing the inheritance hierarchy. Note that you can provide as many
+modules or packages as you want, but the result will quickly get unreadable.
+
+To see the dependencies between the DHCP layer and the ansmachine module, you can run: ::
+
+   pyreverse -o png -p dhcp_ans scapy/ansmachine.py scapy/layers/dhcp.py scapy/packet.py
+
+In this case, Pyreverse will also generate a ``packages_dhcp_ans.png`` showing the link between the different python modules provided.

@@ -1,7 +1,7 @@
 <block>
-  <name>Packet sink</name>
+  <name>Zwave PacketSink</name>
   <key>Zwave_packet_sink</key>
-  <category>ZWAVE</category>
+  <category>[Scapy Radio]/Zwave</category>
   <import>import Zwave</import>
   <make>Zwave.packet_sink()</make>
 

@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <block>
-  <name>packet_sink_9_6</name>
+  <name>Zwave PacketSink.9.6</name>
   <key>Zwave_packet_sink_9_6</key>
-  <category>ZWAVE</category>
+  <category>[Scapy Radio]/Zwave</category>
   <import>import Zwave</import>
   <make>Zwave.packet_sink_9_6()</make>
   <sink>

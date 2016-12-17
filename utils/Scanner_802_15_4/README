@@ -1,0 +1,2 @@
+You need to run the scanner with root privilege!
+After running ./install.sh, please copy the folder HOME/.scapy/radio into /root/

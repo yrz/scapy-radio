@@ -8,8 +8,8 @@ Fields that hold random numbers.
 """
 
 import random,time,math
-from base_classes import Net
-from utils import corrupt_bits,corrupt_bytes
+from scapy.base_classes import Net
+from scapy.utils import corrupt_bits,corrupt_bytes
 
 ####################
 ## Random numbers ##
@@ -47,12 +47,13 @@ class RandomEnumeration:
         while True:
             if self.turns == 0 or (self.i == 0 and self.renewkeys):
                 self.cnt_key = self.rnd.randint(0,2**self.n-1)
-                self.sbox = [self.rnd.randint(0,self.fsmask) for k in xrange(self.sbox_size)]
+                self.sbox = [self.rnd.randint(0, self.fsmask)
+                             for _ in xrange(self.sbox_size)]
             self.turns += 1
             while self.i < 2**self.n:
                 ct = self.i^self.cnt_key
                 self.i += 1
-                for k in range(self.rounds): # Unbalanced Feistel Network
+                for _ in xrange(self.rounds): # Unbalanced Feistel Network
                     lsb = ct & self.fsmask
                     ct >>= self.fs
                     lsb ^= self.sbox[ct%self.sbox_size]
@@ -188,6 +189,15 @@ class RandEnumSLong(RandEnum):
     def __init__(self):
         RandEnum.__init__(self, -2L**63, 2L**63-1)
 
+class RandEnumKeys(RandEnum):
+    """Picks a random value from dict keys list. """
+    def __init__(self, enum):
+        self.enum = list(enum)
+        self.seq = RandomEnumeration(0, len(self.enum) - 1)
+
+    def _fix(self):
+        return self.enum[self.seq.next()]
+
 class RandChoice(RandField):
     def __init__(self, *args):
         if not args:
@@ -204,18 +214,18 @@ class RandString(RandField):
         self.chars = chars
     def _fix(self):
         s = ""
-        for i in range(self.size):
+        for _ in xrange(self.size):
             s += random.choice(self.chars)
         return s
 
 class RandBin(RandString):
     def __init__(self, size=None):
-        RandString.__init__(self, size, "".join(map(chr,range(256))))
+        RandString.__init__(self, size, "".join(map(chr, xrange(256))))
 
 
 class RandTermString(RandString):
     def __init__(self, size, term):
-        RandString.__init__(self, size, "".join(map(chr,range(1,256))))
+        RandString.__init__(self, size, "".join(map(chr, xrange(1,256))))
         self.term = term
     def _fix(self):
         return RandString._fix(self)+self.term
@@ -233,7 +243,7 @@ class RandMAC(RandString):
         template += ":*:*:*:*:*"
         template = template.split(":")
         self.mac = ()
-        for i in range(6):
+        for i in xrange(6):
             if template[i] == "*":
                 v = RandByte()
             elif "-" in template[i]:
@@ -281,9 +291,9 @@ class RandIP6(RandString):
                     remain += 1
                 if nbm or self.variable:
                     remain = random.randint(0,remain)
-                for j in range(remain):
+                for j in xrange(remain):
                     ip.append("%04x" % random.randint(0,65535))
-            if n == 0:
+            elif n == 0:
               ip.append("0")
             elif not n:
                 ip.append("")
@@ -292,7 +302,7 @@ class RandIP6(RandString):
         if len(ip) == 9:
             ip.remove("")
         if ip[-1] == "":
-          ip[-1] = 0
+          ip[-1] = "0"
         return ":".join(ip)
 
 class RandOID(RandString):
@@ -300,7 +310,7 @@ class RandOID(RandString):
         self.ori_fmt = fmt
         if fmt is not None:
             fmt = fmt.split(".")
-            for i in range(len(fmt)):
+            for i in xrange(len(fmt)):
                 if "-" in fmt[i]:
                     fmt[i] = tuple(map(int, fmt[i].split("-")))
         self.fmt = fmt
@@ -350,7 +360,7 @@ class RandRegExp(RandField):
             else:
                 c1 = s[p-1]
                 c2 = s[p+1]
-                rng = "".join(map(chr, range(ord(c1),ord(c2)+1)))
+                rng = "".join(map(chr, xrange(ord(c1), ord(c2)+1)))
                 s = s[:p-1]+rng+s[p+1:]
         res = m+s
         if invert:
@@ -494,7 +504,7 @@ class RandSingNum(RandSingularity):
             end = -end
             sign = -1
         end_n = int(math.log(end)/math.log(2))+1
-        return set([sign*2**i for i in range(end_n)])            
+        return set([sign*2**i for i in xrange(end_n)])            
         
     def __init__(self, mn, mx):
         sing = set([0, mn, mx, int((mn+mx)/2)])
@@ -630,10 +640,19 @@ class IntAutoTime(AutoTime):
 
 
 class ZuluTime(AutoTime):
-    def __init__(self, diff=None):
-        self.diff=diff
+    def __init__(self, diff=0):
+        self.diff = diff
     def _fix(self):
-        return time.strftime("%y%m%d%H%M%SZ",time.gmtime(time.time()+self.diff))
+        return time.strftime("%y%m%d%H%M%SZ",
+                             time.gmtime(time.time() + self.diff))
+
+
+class GeneralizedTime(AutoTime):
+    def __init__(self, diff=0):
+        self.diff = diff
+    def _fix(self):
+        return time.strftime("%Y%m%d%H%M%SZ",
+                             time.gmtime(time.time() + self.diff))
 
 
 class DelayedEval(VolatileValue):

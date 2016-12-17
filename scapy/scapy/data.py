@@ -8,8 +8,8 @@ Global variables and functions for handling external data sets.
 """
 
 import os,sys,re
-from dadict import DADict
-from error import log_loading
+from scapy.dadict import DADict
+from scapy.error import log_loading
 
 ############
 ## Consts ##
@@ -48,7 +48,7 @@ IPV6_ADDR_UNSPECIFIED = 0x10000
 
 
 
-MTU = 0x7fff # a.k.a give me all you have
+MTU = 0xffff # a.k.a give me all you have
 
 WINDOWS=sys.platform.startswith("win")
 

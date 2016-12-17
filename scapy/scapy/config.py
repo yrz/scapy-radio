@@ -8,10 +8,11 @@ Implementation for of the configuration object.
 """
 
 import os,time,socket,sys
-from data import *
-import base_classes
-import themes
-from error import log_scapy
+
+from scapy.data import *
+from scapy import base_classes
+from scapy import themes
+from scapy.error import log_scapy
 
 ############
 ## Config ##
@@ -23,11 +24,10 @@ class ConfClass(object):
     def __repr__(self):
         return str(self)
     def __str__(self):
-        s=""
+        s = ""
         keys = self.__class__.__dict__.copy()
         keys.update(self.__dict__)
-        keys = keys.keys()
-        keys.sort()
+        keys = sorted(keys)
         for i in keys:
             if i[0] != "_":
                 r = repr(getattr(self, i))
@@ -64,6 +64,7 @@ class ProgPath(ConfClass):
     tcpreplay = "tcpreplay"
     hexedit = "hexer"
     wireshark = "wireshark"
+    ifconfig = "ifconfig"
 
 
 class ConfigFieldList:
@@ -129,13 +130,15 @@ class Num2Layer:
                 dir = "<->"
             else:
                 dir = " ->"
-            lst.append((num,"%#6x %s %-20s (%s)" % (num,dir,layer.__name__,layer.name)))
+            lst.append((num,"%#6x %s %-20s (%s)" % (num, dir, layer.__name__,
+                                                    layer._name)))
         for layer,num in self.layer2num.iteritems():
             if num not in self.num2layer or self.num2layer[num] != layer:
-                lst.append((num,"%#6x <-  %-20s (%s)" % (num,layer.__name__,layer.name)))
+                lst.append((num,"%#6x <-  %-20s (%s)" % (num, layer.__name__,
+                                                         layer._name)))
         lst.sort()
         return "\n".join(y for x,y in lst)
-            
+
 
 class LayersList(list):
     def __repr__(self):
@@ -277,7 +280,7 @@ def _prompt_changer(attr,val):
     prompt = conf.prompt
     try:
         ct = val
-        if isinstance(ct, AnsiColorTheme) and ct.prompt(""):
+        if isinstance(ct, themes.AnsiColorTheme) and ct.prompt(""):
             ## ^A and ^B delimit invisible caracters for readline to count right.
             ## And we need ct.prompt() to do change something or else ^A and ^B will be
             ## displayed
@@ -316,7 +319,7 @@ noenum    : holds list of enum fields for which conversion to string should NOT 
 AS_resolver: choose the AS resolver class to use
 extensions_paths: path or list of paths where extensions are to be looked for
 """
-    version = "2.2.0-dev"
+    version = "2.3.2-dev"
     session = ""
     interactive = False
     interactive_shell = ""
@@ -342,17 +345,14 @@ extensions_paths: path or list of paths where extensions are to be looked for
     L3socket = None
     L2socket = None
     L2listen = None
-    histfile = os.path.join(os.path.expanduser("~"), ".scapy_history")
+    min_pkt_size = 60
+    histfile = os.getenv('SCAPY_HISTFILE',
+                         os.path.join(os.path.expanduser("~"),
+                                      ".scapy_history"))
     padding = 1
     except_filter = ""
     debug_match = 0
     wepkey = ""
-    dot15d4key = ""
-    dot15d4securitysuite = 1
-    dot15d4extendauth = 1
-    xbee = 0
-    nwdb = None
-    use_dot15d4_database = 0
     route = None # Filed by route.py
     route6 = None # Filed by route6.py
     auto_fragment = 1
@@ -363,8 +363,9 @@ extensions_paths: path or list of paths where extensions are to be looked for
     resolve = Resolve()
     noenum = Resolve()
     emph = Emphasize()
-    use_pcap = False
-    use_dnet = False
+    use_pcap = os.getenv("SCAPY_USE_PCAPDNET", "").lower().startswith("y")
+    use_dnet = os.getenv("SCAPY_USE_PCAPDNET", "").lower().startswith("y")
+    use_winpcapy = False
     ipv6_enabled = socket.has_ipv6
     ethertypes = ETHER_TYPES
     protocols = IP_PROTOS
@@ -376,11 +377,14 @@ extensions_paths: path or list of paths where extensions are to be looked for
     stats_dot11_protocols = []
     temp_files = []
     netcache = NetCache()
-    load_layers = ["l2", "inet", "dhcp", "dns", "dot11", "gprs", "hsrp", "inet6", "ir", "isakmp", "l2tp",
-                   "mgcp", "mobileip", "netbios", "netflow", "ntp", "ppp", "radius", "rip", "rtp",
-                   "sebek", "skinny", "smb", "snmp", "tftp", "x509", "bluetooth", "dhcp6", "llmnr", "sctp", "vrrp",
-                   "ipsec" ]
-    
+    geoip_city = '/usr/share/GeoIP/GeoLiteCity.dat'
+    load_layers = ["l2", "inet", "dhcp", "dns", "dot11", "gprs", "tls",
+                   "hsrp", "inet6", "ir", "isakmp", "l2tp", "mgcp",
+                   "mobileip", "netbios", "netflow", "ntp", "ppp",
+                   "radius", "rip", "rtp", "skinny", "smb", "snmp",
+                   "tftp", "x509", "bluetooth", "dhcp6", "llmnr",
+                   "sctp", "vrrp", "ipsec", "lltd", "vxlan"]
+
 
 if not Conf.ipv6_enabled:
     log_scapy.warning("IPv6 support disabled in Python. Cannot load scapy IPv6 layers.")

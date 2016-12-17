@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.8">
+  <compounddef id="namespacegr_1_1sigfox" kind="namespace">
+    <compoundname>gr::sigfox</compoundname>
+    <innerclass refid="classgr_1_1sigfox_1_1packet__sink__scapy" prot="public">gr::sigfox::packet_sink_scapy</innerclass>
+    <innerclass refid="classgr_1_1sigfox_1_1packet__sink__scapy__impl" prot="public">gr::sigfox::packet_sink_scapy_impl</innerclass>
+    <innerclass refid="classgr_1_1sigfox_1_1preamble__prefixer__scapy" prot="public">gr::sigfox::preamble_prefixer_scapy</innerclass>
+    <innerclass refid="classgr_1_1sigfox_1_1preamble__prefixer__scapy__impl" prot="public">gr::sigfox::preamble_prefixer_scapy_impl</innerclass>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/include/sigfox/packet_sink_scapy.h" line="29" column="1"/>
+  </compounddef>
+</doxygen>

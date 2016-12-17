@@ -25,7 +25,7 @@ import pmt
 import time
 import string
 
-DEBUG=1
+DEBUG=0
 
 class uhd_tags(gr.sync_block):
     """
@@ -61,7 +61,7 @@ class uhd_tags(gr.sync_block):
         eob_t = pmt.string_to_symbol(self.end_tag)
         len_t = pmt.string_to_symbol(self.len_tag)
 
-        value = pmt.from_bool(1)
+        value = pmt.from_bool(True)
         source = pmt.string_to_symbol("uhd_tags")
 
         tags = self.get_tags_in_range(0, nread, nread+ninput_items)

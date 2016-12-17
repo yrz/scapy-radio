@@ -12,13 +12,14 @@ import struct
 from scapy.packet import *
 from scapy.fields import *
 from scapy.ansmachine import *
+from scapy.data import *
 from scapy.layers.inet import UDP,IP
 from scapy.layers.l2 import Ether
 from scapy.base_classes import Net
 from scapy.volatile import RandField
 
 from scapy.arch import get_if_raw_hwaddr
-from scapy.sendrecv import srp1
+from scapy.sendrecv import *
 
 dhcpmagic="c\x82Sc"
 
@@ -116,6 +117,7 @@ DHCPOptions = {
     51: IntField("lease_time", 43200),
     54: IPField("server_id","0.0.0.0"),
     55: "param_req_list",
+    56: "error_message",
     57: ShortField("max_dhcp_size", 1500),
     58: IntField("renewal_time", 21600),
     59: IntField("rebinding_time", 37800),
@@ -167,7 +169,7 @@ class RandDHCPOptions(RandField):
         self._opts.remove("end")
     def _fix(self):
         op = []
-        for k in range(self.size):
+        for k in xrange(self.size):
             o = random.choice(self._opts)
             if type(o) is str:
                 op.append((o,self.rndstr*1))

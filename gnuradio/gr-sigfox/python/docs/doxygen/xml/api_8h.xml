@@ -1,0 +1,68 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.8">
+  <compounddef id="api_8h" kind="file">
+    <compoundname>api.h</compoundname>
+    <includes local="no">gnuradio/attributes.h</includes>
+    <includedby refid="packet__sink__scapy_8h" local="no">packet_sink_scapy.h</includedby>
+    <includedby refid="preamble__prefixer__scapy_8h" local="no">preamble_prefixer_scapy.h</includedby>
+    <incdepgraph>
+      <node id="36">
+        <label>gnuradio/attributes.h</label>
+      </node>
+      <node id="35">
+        <label>api.h</label>
+        <link refid="api.h"/>
+        <childnode refid="36" relation="include">
+        </childnode>
+      </node>
+    </incdepgraph>
+    <invincdepgraph>
+      <node id="41">
+        <label>preamble_prefixer_scapy_impl.h</label>
+        <link refid="preamble__prefixer__scapy__impl_8h"/>
+      </node>
+      <node id="38">
+        <label>packet_sink_scapy.h</label>
+        <link refid="packet__sink__scapy_8h"/>
+        <childnode refid="39" relation="include">
+        </childnode>
+      </node>
+      <node id="39">
+        <label>packet_sink_scapy_impl.h</label>
+        <link refid="packet__sink__scapy__impl_8h"/>
+      </node>
+      <node id="40">
+        <label>preamble_prefixer_scapy.h</label>
+        <link refid="preamble__prefixer__scapy_8h"/>
+        <childnode refid="41" relation="include">
+        </childnode>
+      </node>
+      <node id="37">
+        <label>api.h</label>
+        <link refid="api.h"/>
+        <childnode refid="38" relation="include">
+        </childnode>
+        <childnode refid="40" relation="include">
+        </childnode>
+      </node>
+    </invincdepgraph>
+      <sectiondef kind="define">
+      <memberdef kind="define" id="api_8h_1ad873b9e967e7b09f2903a04d6bc2ad0b" prot="public" static="no">
+        <name>SIGFOX_API</name>
+        <initializer>__GR_ATTR_IMPORT</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/include/sigfox/api.h" line="30" column="12" bodyfile="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/include/sigfox/api.h" bodystart="30" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/pentest/Downloads/scapy-radio/gnuradio/gr-sigfox/include/sigfox/api.h"/>
+  </compounddef>
+</doxygen>

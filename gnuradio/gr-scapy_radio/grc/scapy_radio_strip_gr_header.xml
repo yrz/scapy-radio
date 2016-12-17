@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <block>
-  <name>Strip GR header</name>
+  <name>ScapyRadio Strip GR header</name>
   <key>scapy_radio_strip_gr_header</key>
-  <category>Scapy Radio</category>
+  <category>[Scapy Radio]/Core</category>
   <import>import scapy_radio</import>
   <make>scapy_radio.strip_gr_header($protocol_id)</make>
   <callback>set_protocol_id($protocol_id)</callback>

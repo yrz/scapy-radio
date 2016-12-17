@@ -7,16 +7,19 @@
 Functions to send and receive packets.
 """
 
+import errno
 import cPickle,os,sys,time,subprocess
+import itertools
 from select import select
-from data import *
-import arch
-from config import conf
-from packet import Gen
-from utils import warning,get_temp_file,PcapReader,wrpcap
-import plist
-from error import log_runtime,log_interactive
-from base_classes import SetGen
+from scapy.data import *
+from scapy import arch
+from scapy.config import conf
+from scapy.packet import Gen
+from scapy.utils import warning,get_temp_file,PcapReader,wrpcap
+from scapy import plist
+from scapy.error import log_runtime,log_interactive
+from scapy.base_classes import SetGen
+from scapy.supersocket import StreamSocket
 
 #################
 ## Debug class ##
@@ -121,12 +124,17 @@ def sndrcv(pks, pkt, timeout = None, inter = 0, verbose=None, chainCC=0, retry=0
                                 if remaintime <= 0:
                                     break
                             r = None
-                            if arch.FREEBSD or arch.DARWIN:
+                            if not isinstance(pks, StreamSocket) and (arch.FREEBSD or arch.DARWIN):
                                 inp, out, err = select(inmask,[],[], 0.05)
                                 if len(inp) == 0 or pks in inp:
                                     r = pks.nonblock_recv()
                             else:
-                                inp, out, err = select(inmask,[],[], remaintime)
+                                inp = []
+                                try:
+                                    inp, out, err = select(inmask,[],[], remaintime)
+                                except IOError, exc:
+                                    if exc.errno != errno.EINTR:
+                                        raise
                                 if len(inp) == 0:
                                     break
                                 if pks in inp:
@@ -141,19 +149,19 @@ def sndrcv(pks, pkt, timeout = None, inter = 0, verbose=None, chainCC=0, retry=0
                             h = r.hashret()
                             if h in hsent:
                                 hlst = hsent[h]
-                                for i in range(len(hlst)):
-                                    if r.answers(hlst[i]):
-                                        ans.append((hlst[i],r))
+                                for i, sentpkt in enumerate(hlst):
+                                    if r.answers(sentpkt):
+                                        ans.append((sentpkt, r))
                                         if verbose > 1:
                                             os.write(1, "*")
-                                        ok = 1                                
+                                        ok = 1
                                         if not multi:
-                                            del(hlst[i])
-                                            notans -= 1;
+                                            del hlst[i]
+                                            notans -= 1
                                         else:
-                                            if not hasattr(hlst[i], '_answered'):
-                                                notans -= 1;
-                                            hlst[i]._answered = 1;
+                                            if not hasattr(sentpkt, '_answered'):
+                                                notans -= 1
+                                            sentpkt._answered = 1
                                         break
                             if notans == 0 and not multi:
                                 break
@@ -180,10 +188,10 @@ def sndrcv(pks, pkt, timeout = None, inter = 0, verbose=None, chainCC=0, retry=0
             if pid == 0:
                 os._exit(0)
 
-        remain = reduce(list.__add__, hsent.values(), [])
+        remain = list(itertools.chain(*hsent.itervalues()))
         if multi:
-            remain = filter(lambda p: not hasattr(p, '_answered'), remain);
-            
+            remain = [p for p in remain if not hasattr(p, '_answered')]
+
         if autostop and len(remain) > 0 and len(remain) != len(tobesent):
             retry = autostop
             
@@ -207,7 +215,7 @@ def sndrcv(pks, pkt, timeout = None, inter = 0, verbose=None, chainCC=0, retry=0
     return plist.SndRcvList(ans),plist.PacketList(remain,"Unanswered")
 
 
-def __gen_send(s, x, inter=0, loop=0, count=None, verbose=None, realtime=None, *args, **kargs):
+def __gen_send(s, x, inter=0, loop=0, count=None, verbose=None, realtime=None, return_packets=False, *args, **kargs):
     if type(x) is str:
         x = conf.raw_layer(load=x)
     if not isinstance(x, Gen):
@@ -218,7 +226,9 @@ def __gen_send(s, x, inter=0, loop=0, count=None, verbose=None, realtime=None, *
     if count is not None:
         loop = -count
     elif not loop:
-        loop=-1
+        loop = -1
+    if return_packets:
+        sent_packets = plist.PacketList()
     try:
         while loop:
             dt0 = None
@@ -230,8 +240,10 @@ def __gen_send(s, x, inter=0, loop=0, count=None, verbose=None, realtime=None, *
                         if st > 0:
                             time.sleep(st)
                     else:
-                        dt0 = ct-p.time 
+                        dt0 = ct-p.time
                 s.send(p)
+                if return_packets:
+                    sent_packets.append(p)
                 n += 1
                 if verbose:
                     os.write(1,".")
@@ -243,20 +255,25 @@ def __gen_send(s, x, inter=0, loop=0, count=None, verbose=None, realtime=None, *
     s.close()
     if verbose:
         print "\nSent %i packets." % n
+    if return_packets:
+        return sent_packets
         
 @conf.commands.register
-def send(x, inter=0, loop=0, count=None, verbose=None, realtime=None, *args, **kargs):
+def send(x, inter=0, loop=0, count=None, verbose=None, realtime=None, return_packets=False, *args, **kargs):
     """Send packets at layer 3
 send(packets, [inter=0], [loop=0], [verbose=conf.verb]) -> None"""
-    __gen_send(conf.L3socket(*args, **kargs), x, inter=inter, loop=loop, count=count,verbose=verbose, realtime=realtime)
+    return __gen_send(conf.L3socket(*args, **kargs), x, inter=inter, loop=loop, count=count,verbose=verbose,
+                      realtime=realtime, return_packets=return_packets)
 
 @conf.commands.register
-def sendp(x, inter=0, loop=0, iface=None, iface_hint=None, count=None, verbose=None, realtime=None, *args, **kargs):
+def sendp(x, inter=0, loop=0, iface=None, iface_hint=None, count=None, verbose=None, realtime=None,
+          return_packets=False, *args, **kargs):
     """Send packets at layer 2
 sendp(packets, [inter=0], [loop=0], [verbose=conf.verb]) -> None"""
     if iface is None and iface_hint is not None:
         iface = conf.route.route(iface_hint)[0]
-    __gen_send(conf.L2socket(iface=iface, *args, **kargs), x, inter=inter, loop=loop, count=count, verbose=verbose, realtime=realtime)
+    return __gen_send(conf.L2socket(iface=iface, *args, **kargs), x, inter=inter, loop=loop, count=count,
+                      verbose=verbose, realtime=realtime, return_packets=return_packets)
 
 @conf.commands.register
 def sendpfast(x, pps=None, mbps=None, realtime=None, loop=0, file_cache=False, iface=None):
@@ -273,9 +290,9 @@ def sendpfast(x, pps=None, mbps=None, realtime=None, loop=0, file_cache=False, i
     if pps is not None:
         argv.append("--pps=%i" % pps)
     elif mbps is not None:
-        argv.append("--mbps=%i" % mbps)
+        argv.append("--mbps=%f" % mbps)
     elif realtime is not None:
-        argv.append("--multiplier=%i" % realtime)
+        argv.append("--multiplier=%f" % realtime)
     else:
         argv.append("--topspeed")
 
@@ -529,10 +546,12 @@ iface:    listen answers only on the given interface"""
 
 
 @conf.commands.register
-def sniff(count=0, store=1, offline=None, prn = None, lfilter=None, L2socket=None, timeout=None,
-          opened_socket=None, stop_filter=None, *arg, **karg):
+def sniff(count=0, store=1, offline=None, prn=None, lfilter=None,
+          L2socket=None, timeout=None, opened_socket=None,
+          stop_filter=None, iface=None, *arg, **karg):
     """Sniff packets
-sniff([count=0,] [prn=None,] [store=1,] [offline=None,] [lfilter=None,] + L2ListenSocket args) -> list of packets
+sniff([count=0,] [prn=None,] [store=1,] [offline=None,]
+[lfilter=None,] + L2ListenSocket args) -> list of packets
 
   count: number of packets to capture. 0 means infinity
   store: wether to store sniffed packets or discard them
@@ -549,59 +568,76 @@ opened_socket: provide an object ready to use .recv() on
 stop_filter: python function applied to each packet to determine
              if we have to stop the capture after this packet
              ex: stop_filter = lambda x: x.haslayer(TCP)
+iface: interface or list of interfaces (default: None for sniffing on all
+interfaces)
     """
     c = 0
-    
+    label = {}
+    sniff_sockets = []
     if opened_socket is not None:
-        s = opened_socket
+        sniff_sockets = [opened_socket]
     else:
         if offline is None:
             if L2socket is None:
                 L2socket = conf.L2listen
-            s = L2socket(type=ETH_P_ALL, *arg, **karg)
+            if type(iface) is list:
+                for i in iface:
+                    s = L2socket(type=ETH_P_ALL, iface=i, *arg, **karg)
+                    label[s] = i
+                    sniff_sockets.append(s)
+            else:
+                sniff_sockets = [L2socket(type=ETH_P_ALL, iface=iface, *arg,
+                                           **karg)]
         else:
-            s = PcapReader(offline)
+            sniff_sockets = [PcapReader(offline)]
 
     lst = []
     if timeout is not None:
         stoptime = time.time()+timeout
     remain = None
     try:
-        while 1:
+        stop_event = False
+        while not stop_event:
             if timeout is not None:
                 remain = stoptime-time.time()
                 if remain <= 0:
                     break
-            sel = select([s],[],[],remain)
-            if s in sel[0]:
-                p = s.recv(MTU)
-                if p is None:
-                    break
-                if lfilter and not lfilter(p):
-                    continue
-                if store:
-                    lst.append(p)
-                c += 1
-                if prn:
-                    r = prn(p)
-                    if r is not None:
-                        print r
-                if stop_filter and stop_filter(p):
-                    break
-                if count > 0 and c >= count:
-                    break
+            sel = select(sniff_sockets, [], [], remain)
+            for s in sel[0]:
+                p = s.recv()
+                if p is not None:
+                    if lfilter and not lfilter(p):
+                        continue
+                    if s in label:
+                        p.sniffed_on = label[s]
+                    if store:
+                        lst.append(p)
+                    c += 1
+                    if prn:
+                        r = prn(p)
+                        if r is not None:
+                            print r
+                    if stop_filter and stop_filter(p):
+                        stop_event = True
+                        break
+                    if 0 < count <= c:
+                        stop_event = True
+                        break
     except KeyboardInterrupt:
         pass
     if opened_socket is None:
-        s.close()
+        for s in sniff_sockets:
+            s.close()
     return plist.PacketList(lst,"Sniffed")
 
 
 @conf.commands.register
-def bridge_and_sniff(if1, if2, count=0, store=1, offline=None, prn = None, lfilter=None, L2socket=None, timeout=None,
+def bridge_and_sniff(if1, if2, count=0, store=1, offline=None, prn=None, 
+                     lfilter=None, L2socket=None, timeout=None,
                      stop_filter=None, *args, **kargs):
     """Forward traffic between two interfaces and sniff packets exchanged
-bridge_and_sniff([count=0,] [prn=None,] [store=1,] [offline=None,] [lfilter=None,] + L2Socket args) -> list of packets
+bridge_and_sniff([count=0,] [prn=None,] [store=1,] [offline=None,] 
+[lfilter=None,] + L2Socket args) -> list of packets
 
   count: number of packets to capture. 0 means infinity
   store: wether to store sniffed packets or discard them
@@ -630,12 +666,13 @@ stop_filter: python function applied to each packet to determine
         stoptime = time.time()+timeout
     remain = None
     try:
-        while True:
+        stop_event = False
+        while not stop_event:
             if timeout is not None:
                 remain = stoptime-time.time()
                 if remain <= 0:
                     break
-            ins,outs,errs = select([s1,s2],[],[], remain)
+            ins, outs, errs = select([s1, s2], [], [], remain)
             for s in ins:
                 p = s.recv()
                 if p is not None:
@@ -649,10 +686,12 @@ stop_filter: python function applied to each packet to determine
                     if prn:
                         r = prn(p)
                         if r is not None:
-                            print "%s: %s" % (label[s],r)
+                            print r
                     if stop_filter and stop_filter(p):
+                        stop_event = True
                         break
-                    if count > 0 and c >= count:
+                    if 0 < count <= c:
+                        stop_event = True
                         break
     except KeyboardInterrupt:
         pass
@@ -664,4 +703,5 @@ stop_filter: python function applied to each packet to determine
 def tshark(*args,**kargs):
     """Sniff packets and print them calling pkt.show(), a bit like text wireshark"""
     sniff(prn=lambda x: x.display(),*args,**kargs)
+
 

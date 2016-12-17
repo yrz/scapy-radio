@@ -1,7 +1,7 @@
 <block>
-  <name>Preamble prefixer</name>
+  <name>BT4LE Preamble</name>
   <key>bt4le_preamble_prefixer</key>
-  <category>BT4LE</category>
+  <category>[Scapy Radio]/BT4LE</category>
   <import>import bt4le</import>
   <make>bt4le.preamble_prefixer()</make>
 

@@ -10,7 +10,10 @@ IPv4 (Internet Protocol v4).
 import os,time,struct,re,socket,new
 from select import select
 from collections import defaultdict
-from scapy.utils import checksum
+
+from scapy.utils import checksum,inet_aton,inet_ntoa
+from scapy.base_classes import Gen
+from scapy.data import *
 from scapy.layers.l2 import *
 from scapy.config import conf
 from scapy.fields import *
@@ -19,16 +22,19 @@ from scapy.volatile import *
 from scapy.sendrecv import sr,sr1,srp1
 from scapy.plist import PacketList,SndRcvList
 from scapy.automaton import Automaton,ATMT
+from scapy.error import warning
 
 import scapy.as_resolvers
 
+from scapy.arch import plt, MATPLOTLIB_INLINED, MATPLOTLIB_DEFAULT_PLOT_KARGS
 
 ####################
 ## IP Tools class ##
 ####################
 
-class IPTools:
-    """Add more powers to a class that have a "src" attribute."""
+class IPTools(object):
+    """Add more powers to a class with an "src" attribute."""
+    __slots__ = []
     def whois(self):
         os.system("whois %s" % self.src)
     def ottl(self):
@@ -210,7 +216,9 @@ TCPOptions = (
                 8 : ("Timestamp","!II"),
                 14 : ("AltChkSum","!BH"),
                 15 : ("AltChkSumOpt",None),
-                25 : ("Mood","!p")
+                25 : ("Mood","!p"),
+                28 : ("UTO", "!H"),
+                34 : ("TFO", "!II"),
                 },
               { "EOL":0,
                 "NOP":1,
@@ -221,7 +229,9 @@ TCPOptions = (
                 "Timestamp":8,
                 "AltChkSum":14,
                 "AltChkSumOpt":15,
-                "Mood":25
+                "Mood":25,
+                "UTO":28,
+                "TFO":34,
                 } )
 
 class TCPOptionsField(StrField):
@@ -320,7 +330,23 @@ class ICMPTimeStampField(IntField):
         return val
 
 
+class DestIPField(IPField, DestField):
+    bindings = {}
+    def __init__(self, name, default):
+        IPField.__init__(self, name, None)
+        DestField.__init__(self, name, default)
+    def i2m(self, pkt, x):
+        if x is None:
+            x = self.dst_from_pkt(pkt)
+        return IPField.i2m(self, pkt, x)
+    def i2h(self, pkt, x):
+        if x is None:
+            x = self.dst_from_pkt(pkt)
+        return IPField.i2h(self, pkt, x)
+
+
 class IP(Packet, IPTools):
+    __slots__ = ["_defrag_pos"]
     name = "IP"
     fields_desc = [ BitField("version" , 4 , 4),
                     BitField("ihl", None, 4),
@@ -334,7 +360,7 @@ class IP(Packet, IPTools):
                     XShortField("chksum", None),
                     #IPField("src", "127.0.0.1"),
                     Emph(SourceIPField("src","dst")),
-                    Emph(IPField("dst", "127.0.0.1")),
+                    Emph(DestIPField("dst", "127.0.0.1")),
                     PacketListField("options", [], IPOption, length_from=lambda p:p.ihl*4-20) ]
     def post_build(self, p, pay):
         ihl = self.ihl
@@ -373,6 +399,8 @@ class IP(Packet, IPTools):
              and (self.payload.type in [3,4,5,11,12]) ):
             return self.payload.payload.hashret()
         else:
+            if self.dst == "224.0.0.251":  # mDNS
+                return struct.pack("B", self.proto) + self.payload.hashret()
             if conf.checkIPsrc and conf.checkIPaddr:
                 return strxor(inet_aton(self.src),inet_aton(self.dst))+struct.pack("B",self.proto)+self.payload.hashret()
             else:
@@ -380,8 +408,11 @@ class IP(Packet, IPTools):
     def answers(self, other):
         if not isinstance(other,IP):
             return 0
-        if conf.checkIPaddr and (self.dst != other.src):
-            return 0
+        if conf.checkIPaddr:
+            if other.dst == "224.0.0.251" and self.dst == "224.0.0.251":  # mDNS
+                return self.payload.answers(other.payload)
+            elif (self.dst != other.src):
+                return 0
         if ( (self.proto == socket.IPPROTO_ICMP) and
              (isinstance(self.payload, ICMP)) and
              (self.payload.type in [3,4,5,11,12]) ):
@@ -412,7 +443,7 @@ class IP(Packet, IPTools):
         for p in fl:
             s = str(p[fnb].payload)
             nb = (len(s)+fragsize-1)/fragsize
-            for i in range(nb):            
+            for i in xrange(nb):            
                 q = p.copy()
                 del(q[fnb].payload)
                 del(q[fnb].chksum)
@@ -436,8 +467,8 @@ class TCP(Packet):
                     IntField("seq", 0),
                     IntField("ack", 0),
                     BitField("dataofs", None, 4),
-                    BitField("reserved", 0, 4),
-                    FlagsField("flags", 0x2, 8, "FSRPAUEC"),
+                    BitField("reserved", 0, 3),
+                    FlagsField("flags", 0x2, 9, "FSRPAUECN"),
                     ShortField("window", 8192),
                     XShortField("chksum", None),
                     ShortField("urgptr", 0),
@@ -451,7 +482,12 @@ class TCP(Packet):
         if self.chksum is None:
             if isinstance(self.underlayer, IP):
                 if self.underlayer.len is not None:
-                    ln = self.underlayer.len-20
+                    if self.underlayer.ihl is None:
+                        olen = sum(len(x) for x in self.underlayer.options)
+                        ihl = 5 + olen / 4 + (1 if olen % 4 else 0)
+                    else:
+                        ihl = self.underlayer.ihl
+                    ln = self.underlayer.len - 4 * ihl
                 else:
                     ln = len(p)
                 psdhdr = struct.pack("!4s4sHH",
@@ -505,7 +541,12 @@ class UDP(Packet):
         if self.chksum is None:
             if isinstance(self.underlayer, IP):
                 if self.underlayer.len is not None:
-                    ln = self.underlayer.len-20
+                    if self.underlayer.ihl is None:
+                        olen = sum(len(x) for x in self.underlayer.options)
+                        ihl = 5 + olen / 4 + (1 if olen % 4 else 0)
+                    else:
+                        ihl = self.underlayer.ihl
+                    ln = self.underlayer.len - 4 * ihl
                 else:
                     ln = len(p)
                 psdhdr = struct.pack("!4s4sHH",
@@ -517,6 +558,9 @@ class UDP(Packet):
                 p = p[:6]+struct.pack("!H", ck)+p[8:]
             elif isinstance(self.underlayer, scapy.layers.inet6.IPv6) or isinstance(self.underlayer, scapy.layers.inet6._IPv6ExtHdr):
                 ck = scapy.layers.inet6.in6_chksum(socket.IPPROTO_UDP, self.underlayer, p)
+                # According to RFC2460 if the result checksum is 0, it should be set to 0xFFFF
+                if ck == 0:
+                    ck = 0xFFFF
                 p = p[:6]+struct.pack("!H", ck)+p[8:]
             else:
                 warning("No IP underlayer to compute checksum. Leaving null.")
@@ -596,10 +640,12 @@ class ICMP(Packet):
                     ConditionalField(ICMPTimeStampField("ts_tx", None), lambda pkt:pkt.type in [13,14]),
                     ConditionalField(IPField("gw","0.0.0.0"),  lambda pkt:pkt.type==5),
                     ConditionalField(ByteField("ptr",0),   lambda pkt:pkt.type==12),
-                    ConditionalField(X3BytesField("reserved",0), lambda pkt:pkt.type==12),
+                    ConditionalField(ByteField("reserved",0), lambda pkt:pkt.type in [3,11]),
+                    ConditionalField(ByteField("length",0), lambda pkt:pkt.type in [3,11,12]),
                     ConditionalField(IPField("addr_mask","0.0.0.0"), lambda pkt:pkt.type in [17,18]),
-                    ConditionalField(IntField("unused",0), lambda pkt:pkt.type not in [0,5,8,12,13,14,15,16,17,18]),
-                    
+                    ConditionalField(ShortField("nexthopmtu",0), lambda pkt:pkt.type==3),
+                    ConditionalField(ShortField("unused",0), lambda pkt:pkt.type in [11,12]),
+                    ConditionalField(IntField("unused",0), lambda pkt:pkt.type not in [0,3,5,8,11,12,13,14,15,16,17,18])
                     ]
     def post_build(self, p, pay):
         p += pay
@@ -729,8 +775,10 @@ conf.l3types.register(ETH_P_IP, IP)
 conf.l3types.register_num2layer(ETH_P_ALL, IP)
 
 
-conf.neighbor.register_l3(Ether, IP, lambda l2,l3: getmacbyip(l3.dst))
-conf.neighbor.register_l3(Dot3, IP, lambda l2,l3: getmacbyip(l3.dst))
+def inet_register_l3(l2, l3):
+    return getmacbyip(l3.dst)
+conf.neighbor.register_l3(Ether, IP, inet_register_l3)
+conf.neighbor.register_l3(Dot3, IP, inet_register_l3)
 
 
 ###################
@@ -745,7 +793,7 @@ def fragment(pkt, fragsize=1480):
     for p in pkt:
         s = str(p[IP].payload)
         nb = (len(s)+fragsize-1)/fragsize
-        for i in range(nb):            
+        for i in xrange(nb):            
             q = p.copy()
             del(q[IP].payload)
             del(q[IP].chksum)
@@ -910,27 +958,57 @@ def defragment(plist):
 ### Add timeskew_graph() method to PacketList
 def _packetlist_timeskew_graph(self, ip, **kargs):
     """Tries to graph the timeskew between the timestamps and real time for a given ip"""
+
+    # Filter TCP segments which source address is 'ip'
     res = map(lambda x: self._elt2pkt(x), self.res)
     b = filter(lambda x:x.haslayer(IP) and x.getlayer(IP).src == ip and x.haslayer(TCP), res)
+
+    # Build a list of tuples (creation_time, replied_timestamp)
     c = []
     for p in b:
         opts = p.getlayer(TCP).options
         for o in opts:
             if o[0] == "Timestamp":
                 c.append((p.time,o[1][0]))
+
+    # Stop if the list is empty
     if not c:
         warning("No timestamps found in packet list")
-        return
-    d = map(lambda (x,y): (x%2000,((x-c[0][0])-((y-c[0][1])/1000.0))),c)
-    g = Gnuplot.Gnuplot()
-    g.plot(Gnuplot.Data(d,**kargs))
-    return g
+        return []
+
+    # Prepare the data that will be plotted
+    first_creation_time = c[0][0]
+    first_replied_timestamp = c[0][1]
+
+    def _wrap_data(ts_tuple, wrap_seconds=2000):
+        """Wrap the list of tuples."""
+
+        ct,rt = ts_tuple # (creation_time, replied_timestamp)
+        X = ct % wrap_seconds
+        Y = ((ct-first_creation_time) - ((rt-first_replied_timestamp)/1000.0))
+
+        return X, Y
+
+    data = map(_wrap_data, c)
+
+    # Mimic the default gnuplot output
+    if kargs == {}:
+        kargs = MATPLOTLIB_DEFAULT_PLOT_KARGS
+    lines = plt.plot(data, **kargs)
+
+    # Call show() if matplotlib is not inlined
+    if not MATPLOTLIB_INLINED:
+        plt.show()
+
+    return lines
 
 PacketList.timeskew_graph = new.instancemethod(_packetlist_timeskew_graph, None, PacketList)
 
 
 ### Create a new packet list
 class TracerouteResult(SndRcvList):
+    __slots__ = ["graphdef", "graphpadding", "graphASres", "padding", "hloc",
+                 "nloc"]
     def __init__(self, res=None, name="Traceroute", stats=None):
         PacketList.__init__(self, res, name, stats)
         self.graphdef = None
@@ -954,14 +1032,14 @@ class TracerouteResult(SndRcvList):
             if d not in trace:
                 trace[d] = {}
             trace[d][s[IP].ttl] = r[IP].src, ICMP not in r
-        for k in trace.values():
-            m = filter(lambda x:k[x][1], k.keys())
-            if not m:
+        for k in trace.itervalues():
+            try:
+                m = min(x for x, y in k.itervalues() if y[1])
+            except ValueError:
                 continue
-            m = min(m)
-            for l in k.keys():
+            for l in k.keys():  # use .keys(): k is modified in the loop
                 if l > m:
-                    del(k[l])
+                    del k[l]
         return trace
 
     def trace3D(self):
@@ -999,8 +1077,7 @@ class TracerouteResult(SndRcvList):
         for i in trace:
             tr = trace[i]
             tr3d[i] = []
-            ttl = tr.keys()
-            for t in range(1,max(ttl)+1):
+            for t in xrange(1, max(tr) + 1):
                 if t not in rings:
                     rings[t] = []
                 if t in tr:
@@ -1013,7 +1090,7 @@ class TracerouteResult(SndRcvList):
         for t in rings:
             r = rings[t]
             l = len(r)
-            for i in range(l):
+            for i in xrange(l):
                 if r[i][1] == -1:
                     col = (0.75,0.75,0.75)
                 elif r[i][1]:
@@ -1024,12 +1101,12 @@ class TracerouteResult(SndRcvList):
                 s = IPsphere(pos=((l-1)*visual.cos(2*i*visual.pi/l),(l-1)*visual.sin(2*i*visual.pi/l),2*t),
                              ip = r[i][0],
                              color = col)
-                for trlst in tr3d.values():
+                for trlst in tr3d.itervalues():
                     if t <= len(trlst):
                         if trlst[t-1] == i:
                             trlst[t-1] = s
         forecol = colgen(0.625, 0.4375, 0.25, 0.125)
-        for trlst in tr3d.values():
+        for trlst in tr3d.itervalues():
             col = forecol.next()
             start = (0,0,0)
             for ip in trlst:
@@ -1074,8 +1151,32 @@ class TracerouteResult(SndRcvList):
                 movcenter = visual.scene.mouse.pos
                 
                 
-    def world_trace(self):
-        from modules.geo import locate_ip
+    def world_trace(self, **kargs):
+        """Display traceroute results on a world map."""
+
+        # Check that the GeoIP module can be imported
+        try:
+            import GeoIP
+        except ImportError:
+            message = "Can't import GeoIP. Won't be able to plot the world."
+            scapy.utils.log_loading.info(message)
+            return list()
+
+        # Check if this is an IPv6 traceroute and load the correct file
+        if isinstance(self, scapy.layers.inet6.TracerouteResult6):
+            geoip_city_filename = conf.geoip_city_ipv6
+        else:
+            geoip_city_filename = conf.geoip_city
+
+        # Check that the GeoIP database can be opened
+        try:
+            db = GeoIP.open(conf.geoip_city, 0)
+        except:
+            message = "Can't open GeoIP database at %s" % conf.geoip_city
+            scapy.utils.log_loading.info(message)
+            return list()
+
+        # Regroup results per trace
         ips = {}
         rt = {}
         ports_done = {}
@@ -1095,27 +1196,44 @@ class TracerouteResult(SndRcvList):
             trace[s.ttl] = r.src
             rt[trace_id] = trace
 
+        # Get the addresses locations
         trt = {}
         for trace_id in rt:
             trace = rt[trace_id]
             loctrace = []
-            for i in range(max(trace.keys())):
+            for i in xrange(max(trace)):
                 ip = trace.get(i,None)
                 if ip is None:
                     continue
-                loc = locate_ip(ip)
+                loc = db.record_by_addr(ip)
                 if loc is None:
                     continue
-#                loctrace.append((ip,loc)) # no labels yet
+                loc = loc.get('longitude'), loc.get('latitude')
+                if loc == (None, None):
+                    continue
                 loctrace.append(loc)
             if loctrace:
                 trt[trace_id] = loctrace
 
-        tr = map(lambda x: Gnuplot.Data(x,with_="lines"), trt.values())
-        g = Gnuplot.Gnuplot()
-        world = Gnuplot.File(conf.gnuplot_world,with_="lines")
-        g.plot(world,*tr)
-        return g
+        # Load the map renderer
+        from mpl_toolkits.basemap import Basemap
+        bmap = Basemap()
+
+        # Split latitudes and longitudes per traceroute measurement
+        locations = [zip(*tr) for tr in trt.itervalues()]
+
+        # Plot the traceroute measurement as lines in the map
+        lines = [bmap.plot(*bmap(lons, lats)) for lons, lats in locations]
+
+        # Draw countries   
+        bmap.drawcoastlines()
+
+        # Call show() if matplotlib is not inlined
+        if not MATPLOTLIB_INLINED:
+            plt.show()
+
+        # Return the drawn lines
+        return lines
 
     def make_graph(self,ASres=None,padding=0):
         if ASres is None:
@@ -1168,8 +1286,8 @@ class TracerouteResult(SndRcvList):
         bhip = {}
         for rtk in rt:
             trace = rt[rtk]
-            k = trace.keys()
-            for n in range(min(k), max(k)):
+            max_trace = max(trace)
+            for n in xrange(min(trace), max_trace):
                 if not trace.has_key(n):
                     trace[n] = unknown_label.next()
             if not ports_done.has_key(rtk):
@@ -1184,11 +1302,11 @@ class TracerouteResult(SndRcvList):
                 ips[bh] = None
                 bhip[rtk[1]] = bh
                 bh = '"%s"' % bh
-                trace[max(k)+1] = bh
+                trace[max_trace + 1] = bh
                 blackholes.append(bh)
     
         # Find AS numbers
-        ASN_query_list = dict.fromkeys(map(lambda x:x.rsplit(" ",1)[0],ips)).keys()
+        ASN_query_list = set(x.rsplit(" ",1)[0] for x in ips)
         if ASres is None:            
             ASNlist = []
         else:
@@ -1261,10 +1379,10 @@ class TracerouteResult(SndRcvList):
             s += "#---[%s\n" % `rtk`
             s += '\t\tedge [color="#%s%s%s"];\n' % forecolorlist.next()
             trace = rt[rtk]
-            k = trace.keys()
-            for n in range(min(k), max(k)):
+            maxtrace = max(trace)
+            for n in xrange(min(trace), maxtrace):
                 s += '\t%s ->\n' % trace[n]
-            s += '\t%s;\n' % trace[max(k)]
+            s += '\t%s;\n' % trace[maxtrace]
     
         s += "}\n";
         self.graphdef = s
