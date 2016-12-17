@@ -349,6 +349,13 @@ extensions_paths: path or list of paths where extensions are to be looked for
     histfile = os.getenv('SCAPY_HISTFILE',
                          os.path.join(os.path.expanduser("~"),
                                       ".scapy_history"))
+    dot15d4key = ""
+    dot15d4securitysuite = 1
+    dot15d4extendauth = 0
+    wmbuskey = {}
+    xbee = 0
+    nwdb = None
+    use_dot15d4_database = 0
     padding = 1
     except_filter = ""
     debug_match = 0
